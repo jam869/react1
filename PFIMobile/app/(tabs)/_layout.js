@@ -3,8 +3,8 @@ import { useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { GlobalContext } from '../../Context';
 import { i18n } from '../../locales/i18n';
-import { View, Text, Pressable } from 'react-native'; // NOUVEAU
-import { useSQLiteContext } from 'expo-sqlite'; // NOUVEAU
+import { View, Text, Pressable } from 'react-native';
+import { useSQLiteContext } from 'expo-sqlite';
 
 export default function TabLayout() {
   const { langue, usager, deconnexion } = useContext(GlobalContext);
@@ -12,9 +12,12 @@ export default function TabLayout() {
   
   i18n.locale = langue;
 
-  // Fonction pour bien supprimer la session de la base de données
   const handleLogout = async () => {
-    await db.runAsync('DELETE FROM Session');
+    try {
+      await db.runAsync('DELETE FROM Session');
+    } catch (e) {
+      console.log('Erreur BD tabs:', e);
+    }
     deconnexion();
   };
 
@@ -22,7 +25,6 @@ export default function TabLayout() {
     <Tabs 
       screenOptions={{ 
         tabBarActiveTintColor: '#007AFF',
-        // C'est ici que l'on crée l'en-tête avec le bouton de déconnexion !
         headerRight: () => (
           usager ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
@@ -38,7 +40,7 @@ export default function TabLayout() {
       <Tabs.Screen 
         name="produits/index" 
         options={{ 
-          title: i18n.t("produits"), 
+          title: i18n.t("produits") || "Produits", 
           tabBarIcon: ({ color }) => <Ionicons name="list" size={24} color={color} /> 
         }} 
       />
@@ -51,7 +53,7 @@ export default function TabLayout() {
       <Tabs.Screen 
         name="panier" 
         options={{ 
-          title: i18n.t("panier"), 
+          title: i18n.t("panier") || "Panier", 
           tabBarIcon: ({ color }) => <Ionicons name="cart" size={24} color={color} /> 
         }} 
       />
@@ -59,7 +61,7 @@ export default function TabLayout() {
       <Tabs.Screen 
         name="compte" 
         options={{ 
-          title: i18n.t("compte"), 
+          title: i18n.t("compte") || "Compte", 
           tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} /> 
         }} 
       />
