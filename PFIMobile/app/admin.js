@@ -7,6 +7,11 @@ export default function AdminScreen() {
   const { usager, deconnexion } = useContext(GlobalContext);
   const [produits, setProduits] = useState([]);
 
+  const handleLogout = async () => {
+    await db.runAsync('DELETE FROM Session'); // On efface la BD !
+    deconnexion();
+  };
+
   const chargerProduits = async () => {
     const allRows = await db.getAllAsync('SELECT * FROM Produit');
     setProduits(allRows);
@@ -29,13 +34,21 @@ export default function AdminScreen() {
     chargerProduits();
   };
 
-if (!usager || Number(usager.admin) !== 1) {
-  return (
-    <View style={styles.container}>
-      <Text style={{ textAlign: 'center', marginTop: 40 }}>Acces admin requis.</Text>    
-    </View>
-  );
-}
+  if (!usager) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ textAlign: 'center', marginTop: 40 }}>Chargement...</Text>    
+      </View>
+    );
+  }
+
+  if (Number(usager.admin) !== 1) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ textAlign: 'center', marginTop: 40 }}>Acces admin requis.</Text>    
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
