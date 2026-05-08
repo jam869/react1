@@ -2,7 +2,8 @@ import React, { useContext, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Link } from 'expo-router';
-import { GlobalContext } from '../_Context';
+import { GlobalContext } from '../../Context';
+import { i18n } from '../../locales/i18n';
 export default function CompteClient() {
   const db = useSQLiteContext();
   const { usager, setUsager, langue, setLangue, deconnexion } = useContext(GlobalContext);

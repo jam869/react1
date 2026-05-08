@@ -2,9 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Image, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { GlobalContext } from './_Context';
-import { i18n } from './locales/i18n';
-
+import { GlobalContext } from '../Context';
+import { i18n } from '../locales/i18n';
 export default function Accueil() {
   const [nom, setNom] = useState('');
   const [mdp, setMdp] = useState('');

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, useWindowDimensions, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-
+import { GlobalContext } from '../Context';
+import { i18n } from '../locales/i18n';
 export default function Entrepots() {
   const { height, width } = useWindowDimensions();
   const [region, setRegion] = useState({
