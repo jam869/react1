@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
 import { useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { GlobalContext } from '../../_Context';
-import { i18n } from '../../locales/i18n';
+import { GlobalContext } from '../_Context';
+import { i18n } from '../locales/i18n';
 import { View, Text, Pressable } from 'react-native'; // NOUVEAU
 import { useSQLiteContext } from 'expo-sqlite'; // NOUVEAU
 

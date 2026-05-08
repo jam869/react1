@@ -2,8 +2,8 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, Image, Button, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { GlobalContext } from '../../../_Context';
-import { i18n } from '../../../locales/i18n';
+import { GlobalContext } from '../../_Context';
+import { i18n } from '../../locales/i18n';
 import Intl from 'intl';
 import 'intl/locale-data/jsonp/fr-CA';
 import 'intl/locale-data/jsonp/en-CA';
@@ -12,10 +12,8 @@ export default function DetailsProduit() {
   const { id } = useLocalSearchParams();
   const db = useSQLiteContext();
   const [produit, setProduit] = useState(null);
-  const { setPanier, langue } = useContext(GlobalContext);
-const { langue } = useContext(GlobalContext);
-i18n.locale = langue;
-
+const { setPanier, langue } = useContext(GlobalContext);
+  i18n.locale = langue;
   useEffect(() => {
     async function load() {
       const prod = await db.getFirstAsync('SELECT * FROM Produit WHERE id = ?', [id]);

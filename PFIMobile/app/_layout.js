@@ -2,7 +2,7 @@ import { Stack, router } from 'expo-router';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { createContext, useState, useCallback } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { GlobalContext } from '../_Context'; 
+import { GlobalContext } from './_Context'; 
 
 
 async function migrateDbIfNeeded(db) {
@@ -29,6 +29,11 @@ export default function RootLayout() {
   const [panier, setPanier] = useState([]);
   const [langue, setLangue] = useState('fr-CA');
 
+  const changerLangue = (nouvelleLangue) => {
+    setLangue(nouvelleLangue);
+    i18n.locale = nouvelleLangue;
+  };
+
   const onInit = useCallback(async (db) => {
     await migrateDbIfNeeded(db);
   }, []);
@@ -39,15 +44,14 @@ export default function RootLayout() {
     router.replace('/');
   };
 
-  // Composant pour le bouton de déconnexion
  const HeaderInfo = () => {
-  const dbContext = useSQLiteContext(); // Permet d'accéder à la BD
+  const dbContext = useSQLiteContext(); 
   return usager ? (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
       <Text style={{ fontWeight: 'bold' }}>{usager.nom}</Text>
       <Pressable onPress={async () => {
-        await dbContext.runAsync('DELETE FROM Session'); // Supprime la session BD
-        deconnexion(); // Vide le contexte
+        await dbContext.runAsync('DELETE FROM Session'); 
+        deconnexion(); 
       }}>
         <Text style={{ color: 'red' }}>Déconnexion</Text>
       </Pressable>
@@ -57,7 +61,8 @@ export default function RootLayout() {
 
   return (
     <SQLiteProvider databaseName="pfi.db1" onInit={onInit}>
-<GlobalContext.Provider value={{ usager, setUsager, panier, setPanier, langue, setLangue, deconnexion }}>
+      {/* ATTENTION ICI : on passe setLangue: changerLangue */}
+      <GlobalContext.Provider value={{ usager, setUsager, panier, setPanier, langue, setLangue: changerLangue, deconnexion }}>
           <Stack screenOptions={{ headerRight: () => <HeaderInfo /> }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="admin" options={{ title: 'Administration' }} />
