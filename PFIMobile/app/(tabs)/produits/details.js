@@ -13,6 +13,8 @@ export default function DetailsProduit() {
   const db = useSQLiteContext();
   const [produit, setProduit] = useState(null);
   const { setPanier, langue } = useContext(GlobalContext);
+const { langue } = useContext(GlobalContext);
+i18n.locale = langue;
 
   useEffect(() => {
     async function load() {
