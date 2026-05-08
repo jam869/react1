@@ -2,7 +2,7 @@ import { Stack, router } from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
 import { createContext, useState, useCallback } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { GlobalContext } from '../Context'; 
+import { GlobalContext } from '../_Context'; 
 
 
 async function migrateDbIfNeeded(db) {

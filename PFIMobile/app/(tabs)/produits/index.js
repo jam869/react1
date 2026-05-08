@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, Pressable, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { GlobalContext } from '../../../Context';
+import { GlobalContext } from '../../../_Context';
 import { i18n } from '../../../locales/i18n';
 import Intl from 'intl';
 import 'intl/locale-data/jsonp/fr-CA';

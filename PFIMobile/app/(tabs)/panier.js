@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, Alert, Image } from 'react-native';
-import { GlobalContext } from '../../Context';
+import { GlobalContext } from '../../_Context';
 import { i18n } from '../../locales/i18n';
 
 export default function PanierClient() {

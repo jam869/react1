@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { GlobalContext } from '../../Context';
+import { GlobalContext } from '../../_Context';
 import { i18n } from '../../locales/i18n';
 
 export default function TabLayout() {

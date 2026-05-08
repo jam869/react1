@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, Image, Alert } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
-import { GlobalContext } from '../Context';
+import { GlobalContext } from '../_Context';
 export default function AdminScreen() {
   const db = useSQLiteContext();
   const { usager, deconnexion } = useContext(GlobalContext);
