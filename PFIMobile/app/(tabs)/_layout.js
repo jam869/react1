@@ -1,29 +1,23 @@
 import { Tabs } from 'expo-router';
 import { useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { GlobalContext } from '../_layout';
+import { GlobalContext } from '../../Context';
 import { i18n } from '../../locales/i18n';
 
-export default function TabsLayout() {
+export default function TabLayout() {
   const { langue } = useContext(GlobalContext);
   i18n.locale = langue;
 
   return (
     <Tabs screenOptions={{ tabBarActiveTintColor: '#007AFF' }}>
-     <Tabs.Screen 
-  name="produits/index" 
-  options={{ 
-    title: i18n.t("produits"), 
-    tabBarIcon: ({ color }) => <Ionicons name="list" size={24} color={color} /> 
-  }} 
-      />
-      
-      {/* On cache l'onglet des détails pour qu'il n'apparaisse pas comme bouton */}
       <Tabs.Screen 
-        name="produits/details" 
-        options={{ href: null }} 
+        name="produits/index" 
+        options={{ 
+          title: i18n.t("produits"), 
+          tabBarIcon: ({ color }) => <Ionicons name="list" size={24} color={color} /> 
+        }} 
       />
-      
+      <Tabs.Screen name="produits/details" options={{ href: null }} />
       <Tabs.Screen 
         name="panier" 
         options={{ 
@@ -31,7 +25,6 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="cart" size={24} color={color} /> 
         }} 
       />
-      
       <Tabs.Screen 
         name="compte" 
         options={{ 

@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, Image, Alert } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
-import { GlobalContext } from './_layout';
-
+import { GlobalContext } from '../Context';
 export default function AdminScreen() {
   const db = useSQLiteContext();
   const { usager, deconnexion } = useContext(GlobalContext);
@@ -30,13 +29,18 @@ export default function AdminScreen() {
     chargerProduits();
   };
 
-  if (!usager || Number(usager.admin) !== 1) {
-    return (
-      <View style={styles.container}>
-        <Text style={{ textAlign: 'center', marginTop: 40 }}>Acces admin requis.</Text>
-      </View>
-    );
-  }
+if (!usager || Number(usager.admin) !== 1) {
+  return (
+    <View style={styles.container}>
+      <Text style={{ textAlign: 'center', marginTop: 40 }}>Acces admin requis.</Text>
+      
+      {/* Ajoute le bouton ici pour ne jamais rester bloqué */}
+      <Pressable onPress={deconnexion} style={[styles.buttonLogout, { marginTop: 20 }]}>
+        <Text style={styles.buttonText}>Déconnexion</Text>
+      </Pressable>
+    </View>
+  );
+}
 
   return (
     <View style={styles.container}>
