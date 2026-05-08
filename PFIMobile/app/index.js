@@ -4,59 +4,80 @@ import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlobalContext } from '../Context';
 import { i18n } from '../locales/i18n';
+
 export default function Accueil() {
   const [nom, setNom] = useState('');
   const [mdp, setMdp] = useState('');
   const router = useRouter();
   const db = useSQLiteContext();
-  const { setUsager, setLangue } = useContext(GlobalContext);
+  const { usager, setUsager, setLangue } = useContext(GlobalContext);
 
-  // Vérification de la session au lancement de l'application
+  // 1. On verifie la session UNIQUEMENT pour charger les donnees, pas pour naviguer.
   useEffect(() => {
+    let actif = true;
+
     async function verifierSession() {
-      const session = await db.getFirstAsync('SELECT clientId FROM Session ORDER BY id DESC LIMIT 1');
-      if (session?.clientId) {
-        const user = await db.getFirstAsync('SELECT * FROM Client WHERE id = ?', [session.clientId]);
-        if (user) {
-          const userNormalise = { ...user, admin: Number(user.admin) };
-          setUsager(userNormalise);
-          setLangue(userNormalise.langue || 'fr-CA');
-          
-          if (userNormalise.admin === 1) {
-            router.replace('/admin');
-          } else {
-            router.replace('/produits');
+      try {
+        const session = await db.getFirstAsync('SELECT clientId FROM Session ORDER BY id DESC LIMIT 1');
+        if (!actif) return;
+
+        if (session?.clientId) {
+          const user = await db.getFirstAsync('SELECT * FROM Client WHERE id = ?', [session.clientId]);
+          if (!actif) return;
+
+          if (user) {
+            const userNormalise = { ...user, admin: Number(user.admin) };
+            setUsager(userNormalise);
+            setLangue(userNormalise.langue || 'fr-CA');
           }
         }
+      } catch (erreur) {
+        console.error('Erreur session', erreur);
       }
     }
+
     verifierSession();
-  }, []);
+
+    return () => {
+      actif = false;
+    };
+  }, [db, setLangue, setUsager]);
+
+  // 2. Toute la navigation post-login passe ici (source unique de verite).
+  useEffect(() => {
+    if (!usager) return;
+
+    if (Number(usager.admin) === 1) {
+      router.replace('/admin');
+    } else {
+      router.replace('/produits/index');
+    }
+  }, [router, usager]);
 
   const handleLogin = async () => {
-    const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [
-      nom.trim(),
-      mdp,
-    ]);
+    try {
+      const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [nom.trim(), mdp]);
 
-    if (!user) {
-      Alert.alert('Erreur', "Nom d'utilisateur ou mot de passe incorrect.");
-      return;
+      if (!user) {
+        Alert.alert('Erreur', "Nom d'utilisateur ou mot de passe incorrect.");
+        return;
+      }
+
+      const userNormalise = { ...user, admin: Number(user.admin) };
+      await db.runAsync('DELETE FROM Session');
+      await db.runAsync('INSERT INTO Session (id, clientId) VALUES (1, ?)', [userNormalise.id]);
+
+      setNom('');
+      setMdp('');
+      setLangue(userNormalise.langue || 'fr-CA');
+      i18n.locale = userNormalise.langue || 'fr-CA';
+
+      // Declenche la redirection via le useEffect ci-dessus.
+      setUsager(userNormalise);
+    } catch (erreur) {
+      console.error('Erreur login', erreur);
+      Alert.alert('Erreur', 'Impossible de se connecter pour le moment.');
     }
-
-    const userNormalise = { ...user, admin: Number(user.admin) };
-    await db.runAsync('DELETE FROM Session');
-    await db.runAsync('INSERT INTO Session (id, clientId) VALUES (1, ?)', [userNormalise.id]);
-
-    setUsager(userNormalise);
-    setLangue(userNormalise.langue || 'fr-CA');
-i18n.locale = userNormalise.langue || 'fr-CA';
-    if (Number(userNormalise.admin) === 1) {
-      router.replace('/admin');
-      return;
-    }
-
-    router.replace('/produits'); 
   };
 
   return (

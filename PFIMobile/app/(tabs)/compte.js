@@ -4,13 +4,17 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Link } from 'expo-router';
 import { GlobalContext } from '../../Context';
 import { i18n } from '../../locales/i18n';
+
 export default function CompteClient() {
   const db = useSQLiteContext();
-  const { usager, setUsager, langue, setLangue, deconnexion } = useContext(GlobalContext);
+  const { usager, setUsager, langue, setLangue } = useContext(GlobalContext);
 
   const [mdp, setMdp] = useState(usager?.mdp || '');
   const [adresse, setAdresse] = useState(usager?.adresse || '');
   const [langSelect, setLangSelect] = useState(langue);
+
+  // Assure-toi que la page réagit au changement de langue
+  i18n.locale = langue;
 
   const sauvegarder = async () => {
     if (!usager) return;
@@ -21,26 +25,27 @@ export default function CompteClient() {
     );
 
     setUsager({ ...usager, mdp, adresse, langue: langSelect });
-    setLangue(langSelect);
-    Alert.alert('Succes', 'Vos informations ont ete mises a jour.');
+    setLangue(langSelect); // Ceci met à jour tout le reste de l'application
+    Alert.alert('Succès', 'Vos informations ont été mises à jour.');
   };
 
-  if (!usager) return <Text style={styles.nonConnecte}>Non connecte</Text>;
+  if (!usager) return <Text style={styles.nonConnecte}>{i18n.t('non_connecte') || 'Non connecté'}</Text>;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Nom (non modifiable) :</Text>
+      {/* Remplacer les textes par i18n.t('ta_cle_de_traduction') */}
+      <Text style={styles.label}>{i18n.t('nom_label') || 'Nom (non modifiable) :'}</Text>
       <TextInput value={usager.nom} editable={false} style={[styles.input, { backgroundColor: '#eee' }]} />
 
-      <Text style={styles.label}>Mot de passe :</Text>
+      <Text style={styles.label}>{i18n.t('mdp_label') || 'Mot de passe :'}</Text>
       <TextInput value={mdp} onChangeText={setMdp} style={styles.input} secureTextEntry />
 
-      <Text style={styles.label}>Adresse :</Text>
+      <Text style={styles.label}>{i18n.t('adresse_label') || 'Adresse :'}</Text>
       <TextInput value={adresse} onChangeText={setAdresse} style={styles.input} />
 
-      <Text style={styles.label}>Langue preferee :</Text>
+      <Text style={styles.label}>{i18n.t('langue_label') || 'Langue préférée :'}</Text>
       <View style={styles.radioGroup}>
-        {['fr-CA', 'en-CA', 'auto'].map((l) => (
+        {['fr-CA', 'en-CA'].map((l) => (
           <Pressable
             key={l}
             onPress={() => setLangSelect(l)}
@@ -52,12 +57,12 @@ export default function CompteClient() {
       </View>
 
       <Pressable onPress={sauvegarder} style={styles.saveBtn}>
-        <Text style={styles.actionText}>Sauvegarder</Text>
+        <Text style={styles.actionText}>{i18n.t('sauvegarder') || 'Sauvegarder'}</Text>
       </Pressable>
 
       <Link href="/entrepots" asChild>
         <Pressable style={styles.mapBtn}>
-          <Text style={styles.actionText}>Voir nos entrepots</Text>
+          <Text style={styles.actionText}>{i18n.t('voir_entrepots') || 'Voir nos entrepôts'}</Text>
         </Pressable>
       </Link>
     </View>
@@ -65,6 +70,7 @@ export default function CompteClient() {
 }
 
 const styles = StyleSheet.create({
+  // ... garde tes mêmes styles
   container: { flex: 1, padding: 20 },
   nonConnecte: { flex: 1, textAlign: 'center', marginTop: 50, fontSize: 18 },
   label: { fontWeight: 'bold', marginBottom: 5, marginTop: 10 },

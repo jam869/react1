@@ -1,6 +1,6 @@
 import { Stack, router } from 'expo-router';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
-import { createContext, useState, useCallback } from 'react';
+import { createContext, useState, useCallback, useContext } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { GlobalContext } from '../Context';
 import { i18n } from '../locales/i18n';
@@ -24,6 +24,24 @@ async function migrateDbIfNeeded(db) {
   await db.runAsync("INSERT OR IGNORE INTO Client (id, nom, mdp, admin, langue) VALUES (2, 'client', 'client', 0, 'fr-CA')");
 }
 
+function HeaderInfo() {
+  const { usager, deconnexion } = useContext(GlobalContext);
+  const dbContext = useSQLiteContext(); 
+  
+  if (!usager) return null;
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
+      <Text style={{ fontWeight: 'bold' }}>{usager.nom}</Text>
+      <Pressable onPress={async () => {
+        await dbContext.runAsync('DELETE FROM Session'); 
+        deconnexion(); 
+      }}>
+        <Text style={{ color: 'red' }}>Déconnexion</Text>
+      </Pressable>
+    </View>
+  );
+}
 export default function RootLayout() {
   const [usager, setUsager] = useState(null);
   const [panier, setPanier] = useState([]);
@@ -44,23 +62,9 @@ export default function RootLayout() {
     router.replace('/');
   };
 
- const HeaderInfo = () => {
-  const dbContext = useSQLiteContext(); 
-  return usager ? (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
-      <Text style={{ fontWeight: 'bold' }}>{usager.nom}</Text>
-      <Pressable onPress={async () => {
-        await dbContext.runAsync('DELETE FROM Session'); 
-        deconnexion(); 
-      }}>
-        <Text style={{ color: 'red' }}>Déconnexion</Text>
-      </Pressable>
-    </View>
-  ) : null;
-};
 
   return (
-    <SQLiteProvider databaseName="pfimobile2.db" onInit={onInit}>
+    <SQLiteProvider databaseName="pfi.db" onInit={onInit}>
       {/* ATTENTION ICI : on passe setLangue: changerLangue */}
       <GlobalContext.Provider value={{ usager, setUsager, panier, setPanier, langue, setLangue: changerLangue, deconnexion }}>
           <Stack screenOptions={{ headerRight: () => <HeaderInfo /> }}>

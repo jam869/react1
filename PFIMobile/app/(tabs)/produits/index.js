@@ -19,17 +19,26 @@ export default function ListeProduits() {
   i18n.locale = langue;
 
   useEffect(() => {
+    let actif = true;
+
     async function chargerDonnees() {
       try {
         const resultats = await db.getAllAsync('SELECT * FROM Produit ORDER BY id ASC');
+        if (!actif) return;
         setProduits(resultats);
       } catch (erreur) {
         console.error('Erreur de chargement des produits', erreur);
       } finally {
-        setChargement(false);
+        if (actif) {
+          setChargement(false);
+        }
       }
     }
     chargerDonnees();
+
+    return () => {
+      actif = false;
+    };
   }, [db]);
 
   const formaterPrix = (prix) => {
@@ -50,7 +59,7 @@ export default function ListeProduits() {
             style={styles.card}
             onPress={() =>
               router.push({
-                pathname: '/produits/details', 
+                pathname: '/produits/details',
                 params: { id: item.id },
               })
             }
