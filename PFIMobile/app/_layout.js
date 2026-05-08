@@ -24,24 +24,7 @@ async function migrateDbIfNeeded(db) {
   await db.runAsync("INSERT OR IGNORE INTO Client (id, nom, mdp, admin, langue) VALUES (2, 'client', 'client', 0, 'fr-CA')");
 }
 
-function HeaderInfo() {
-  const { usager, deconnexion } = useContext(GlobalContext);
-  const dbContext = useSQLiteContext(); 
-  
-  if (!usager) return null;
 
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
-      <Text style={{ fontWeight: 'bold' }}>{usager.nom}</Text>
-      <Pressable onPress={async () => {
-        await dbContext.runAsync('DELETE FROM Session'); 
-        deconnexion(); 
-      }}>
-        <Text style={{ color: 'red' }}>Déconnexion</Text>
-      </Pressable>
-    </View>
-  );
-}
 export default function RootLayout() {
   const [usager, setUsager] = useState(null);
   const [panier, setPanier] = useState([]);
@@ -61,6 +44,7 @@ export default function RootLayout() {
     setPanier([]);
     router.replace('/');
   };
+  
 
 
   return (
@@ -75,5 +59,24 @@ export default function RootLayout() {
         </Stack>
       </GlobalContext.Provider>
     </SQLiteProvider>
+  );
+}
+
+function HeaderInfo() {
+  const { usager, deconnexion } = useContext(GlobalContext);
+  const dbContext = useSQLiteContext(); 
+  
+  if (!usager) return null;
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
+      <Text style={{ fontWeight: 'bold' }}>{usager.nom}</Text>
+      <Pressable onPress={async () => {
+        await dbContext.runAsync('DELETE FROM Session'); 
+        deconnexion(); 
+      }}>
+        <Text style={{ color: 'red' }}>Déconnexion</Text>
+      </Pressable>
+    </View>
   );
 }

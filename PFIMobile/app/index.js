@@ -12,71 +12,88 @@ export default function Accueil() {
   const db = useSQLiteContext();
   const { usager, setUsager, setLangue } = useContext(GlobalContext);
 
-  // 1. On verifie la session UNIQUEMENT pour charger les donnees, pas pour naviguer.
+  // 1. Vérification sécurisée de la session au démarrage
   useEffect(() => {
-    let actif = true;
+    let isMounted = true; // Protection contre le Hot Reload
 
     async function verifierSession() {
       try {
         const session = await db.getFirstAsync('SELECT clientId FROM Session ORDER BY id DESC LIMIT 1');
-        if (!actif) return;
-
-        if (session?.clientId) {
+        
+        if (session?.clientId && isMounted) {
           const user = await db.getFirstAsync('SELECT * FROM Client WHERE id = ?', [session.clientId]);
-          if (!actif) return;
-
-          if (user) {
+          if (user && isMounted) {
             const userNormalise = { ...user, admin: Number(user.admin) };
             setUsager(userNormalise);
             setLangue(userNormalise.langue || 'fr-CA');
+            i18n.locale = userNormalise.langue || 'fr-CA';
           }
         }
       } catch (erreur) {
-        console.error('Erreur session', erreur);
+        console.log("Session non trouvée ou erreur SQLite ignorée au démarrage :", erreur);
       }
     }
 
     verifierSession();
 
-    return () => {
-      actif = false;
-    };
-  }, [db, setLangue, setUsager]);
+    // Si on quitte l'écran, on annule pour éviter les crashs
+    return () => { isMounted = false; };
+  }, [db, setUsager, setLangue]);
 
-  // 2. Toute la navigation post-login passe ici (source unique de verite).
+  // 2. Navigation Automatique (Source unique de vérité)
   useEffect(() => {
-    if (!usager) return;
-
-    if (Number(usager.admin) === 1) {
-      router.replace('/admin');
-    } else {
-      router.replace('/produits/index');
+    if (usager) {
+      if (Number(usager.admin) === 1) {
+        router.replace('/admin');
+      } else {
+        router.replace('/produits/index'); // Bien mettre /index ici !
+      }
     }
-  }, [router, usager]);
+  }, [usager, router]);
 
+  // 3. Bouton de Connexion
   const handleLogin = async () => {
     try {
-      const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [nom.trim(), mdp]);
+      if (!nom || !mdp) {
+        Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
+        return;
+      }
+
+      const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [
+        nom.trim(),
+        mdp,
+      ]);
 
       if (!user) {
         Alert.alert('Erreur', "Nom d'utilisateur ou mot de passe incorrect.");
         return;
       }
 
+   // ... (suite de ta fonction handleLogin après la vérification du mot de passe)
       const userNormalise = { ...user, admin: Number(user.admin) };
       await db.runAsync('DELETE FROM Session');
       await db.runAsync('INSERT INTO Session (id, clientId) VALUES (1, ?)', [userNormalise.id]);
 
+      // Mise à jour de tes variables globales
+      setUsager(userNormalise);
+      const langueChoisie = userNormalise.langue || 'fr-CA';
+      setLangue(langueChoisie);
+      i18n.locale = langueChoisie;
+
+      // On vide les champs
       setNom('');
       setMdp('');
-      setLangue(userNormalise.langue || 'fr-CA');
-      i18n.locale = userNormalise.langue || 'fr-CA';
 
-      // Declenche la redirection via le useEffect ci-dessus.
-      setUsager(userNormalise);
+      // La vraie route sans (tabs) et sans le mot index !
+      if (userNormalise.admin === 1) {
+        router.replace('/admin');
+      } else {
+        router.replace('/produits'); 
+      }
+
     } catch (erreur) {
-      console.error('Erreur login', erreur);
-      Alert.alert('Erreur', 'Impossible de se connecter pour le moment.');
+      console.error("Erreur lors de la connexion SQLite :", erreur);
+      Alert.alert('Erreur', 'Un problème est survenu avec la base de données.');
     }
   };
 
