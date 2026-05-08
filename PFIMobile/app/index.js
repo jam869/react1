@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Image, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -10,6 +10,28 @@ export default function Accueil() {
   const router = useRouter();
   const db = useSQLiteContext();
   const { setUsager, setLangue } = useContext(GlobalContext);
+
+  // Vérification de la session au lancement de l'application
+  useEffect(() => {
+    async function verifierSession() {
+      const session = await db.getFirstAsync('SELECT clientId FROM Session ORDER BY id DESC LIMIT 1');
+      if (session?.clientId) {
+        const user = await db.getFirstAsync('SELECT * FROM Client WHERE id = ?', [session.clientId]);
+        if (user) {
+          const userNormalise = { ...user, admin: Number(user.admin) };
+          setUsager(userNormalise);
+          setLangue(userNormalise.langue || 'fr-CA');
+          
+          if (userNormalise.admin === 1) {
+            router.replace('/admin');
+          } else {
+            router.replace('/produits');
+          }
+        }
+      }
+    }
+    verifierSession();
+  }, []);
 
   const handleLogin = async () => {
     const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [
@@ -53,7 +75,7 @@ export default function Accueil() {
       </Pressable>
 
       <View style={styles.footer}>
-        <Text>Cree par : Nathan Aguiar & Zachary Belanger</Text>
+        <Text>Créé par : Nathan Aguiar & Zachary Bélanger</Text>
       </View>
     </View>
   );

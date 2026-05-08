@@ -10,12 +10,12 @@ export default function TabsLayout() {
 
   return (
     <Tabs screenOptions={{ tabBarActiveTintColor: '#007AFF' }}>
-      <Tabs.Screen 
-        name="produits" 
-        options={{ 
-          title: i18n.t("produits"), 
-          tabBarIcon: ({ color }) => <Ionicons name="list" size={24} color={color} /> 
-        }} 
+     <Tabs.Screen 
+  name="produits/index" 
+  options={{ 
+    title: i18n.t("produits"), 
+    tabBarIcon: ({ color }) => <Ionicons name="list" size={24} color={color} /> 
+  }} 
       />
       
       {/* On cache l'onglet des détails pour qu'il n'apparaisse pas comme bouton */}
