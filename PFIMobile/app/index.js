@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, Pressable, Image, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -13,36 +13,6 @@ export default function Accueil() {
   const db = useSQLiteContext();
   const { setUsager, setLangue } = useContext(GlobalContext);
 
-  // 1. On vérifie la session automatiquement quand l'application s'ouvre
-  useEffect(() => {
-    async function verifierSession() {
-      try {
-        const session = await db.getFirstAsync('SELECT clientId FROM Session LIMIT 1');
-        if (session) {
-          const user = await db.getFirstAsync('SELECT * FROM Client WHERE id = ?', [session.clientId]);
-          if (user) {
-            const userNormalise = { ...user, admin: Number(user.admin) };
-            
-            // Met à jour la mémoire et navigue direct
-            setUsager(userNormalise);
-            setLangue(userNormalise.langue || 'fr-CA');
-            i18n.locale = userNormalise.langue || 'fr-CA';
-            
-            if (userNormalise.admin === 1) {
-              router.replace('/admin');
-            } else {
-              router.replace('/produits');
-            }
-          }
-        }
-      } catch (erreur) {
-        console.log("Aucune session trouvée au démarrage", erreur);
-      }
-    }
-    verifierSession();
-  }, [db, router, setLangue, setUsager]);
-
-  // 2. Action du clic sur le bouton de connexion
   const handleLogin = async () => {
     try {
       if (!nom || !mdp) {
@@ -50,6 +20,7 @@ export default function Accueil() {
         return;
       }
 
+      // Vérification des identifiants dans la base de données
       const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [
         nom.trim(),
         mdp,
@@ -62,21 +33,21 @@ export default function Accueil() {
 
       const userNormalise = { ...user, admin: Number(user.admin) };
       
-      // Enregistrement de la session SQLite
+      // On enregistre la session physiquement dans SQLite
       await db.runAsync('DELETE FROM Session');
-      await db.runAsync('INSERT INTO Session (id, clientId) VALUES (1, ?)', [userNormalise.id]);
+      await db.runAsync('INSERT INTO Session (clientId) VALUES (?)', [userNormalise.id]);
 
-      // Mise à jour du Context
+      // On met à jour les variables globales (Contexte)
       setUsager(userNormalise);
       const langueChoisie = userNormalise.langue || 'fr-CA';
       setLangue(langueChoisie);
       i18n.locale = langueChoisie;
 
-      // On vide le formulaire
+      // On vide les champs du formulaire
       setNom('');
       setMdp('');
 
-      // Navigation immédiate (le contexte ne sera plus perdu !)
+      // Navigation directe vers la bonne route
       if (userNormalise.admin === 1) {
         router.replace('/admin');
       } else {
@@ -84,8 +55,8 @@ export default function Accueil() {
       }
 
     } catch (erreur) {
-      console.error("Erreur base de données :", erreur);
-      Alert.alert('Erreur', 'Un problème est survenu.');
+      console.error("Erreur lors de la connexion SQLite :", erreur);
+      Alert.alert('Erreur', 'Un problème est survenu avec la base de données.');
     }
   };
 
@@ -97,12 +68,27 @@ export default function Accueil() {
         style={styles.logo}
       />
 
-      <TextInput placeholder="Nom d'utilisateur" value={nom} onChangeText={setNom} style={styles.input} />
-      <TextInput placeholder="Mot de passe" secureTextEntry value={mdp} onChangeText={setMdp} style={styles.input} />
+      <TextInput 
+        placeholder="Nom d'utilisateur" 
+        value={nom} 
+        onChangeText={setNom} 
+        style={styles.input} 
+      />
+      <TextInput 
+        placeholder="Mot de passe" 
+        secureTextEntry 
+        value={mdp} 
+        onChangeText={setMdp} 
+        style={styles.input} 
+      />
 
       <Pressable onPress={handleLogin} style={styles.button}>
         <Text style={styles.buttonText}>Se connecter</Text>
       </Pressable>
+
+      <View style={styles.footer}>
+        <Text>Créé par : Nathan Aguiar & Zachary Bélanger</Text>
+      </View>
     </View>
   );
 }
@@ -114,4 +100,5 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, width: '100%', marginBottom: 15, padding: 12, borderRadius: 8 },
   button: { backgroundColor: '#007AFF', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center' },
   buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  footer: { position: 'absolute', bottom: 30 },
 });

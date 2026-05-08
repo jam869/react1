@@ -3,10 +3,8 @@ import { View, Text, FlatList, Pressable, StyleSheet, Alert, Image } from 'react
 import { GlobalContext } from '../../Context';
 import { i18n } from '../../locales/i18n';
 export default function PanierClient() {
-  const { panier, setPanier, usager } = useContext(GlobalContext);
-
+const { panier, setPanier, usager, langue } = useContext(GlobalContext);
   const total = panier.reduce((somme, item) => somme + Number(item.prix || 0), 0);
-const { langue } = useContext(GlobalContext);
 i18n.locale = langue;
   const acheter = () => {
     if (panier.length === 0) return;

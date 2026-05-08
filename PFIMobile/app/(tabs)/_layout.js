@@ -11,13 +11,11 @@ export default function TabLayout() {
   const db = useSQLiteContext();
   
   i18n.locale = langue;
-
-  const handleLogout = async () => {
+const handleLogout = async () => {
     try {
       await db.runAsync('DELETE FROM Session');
-    } catch (e) {
-      console.log('Erreur BD tabs:', e);
-    }
+    } catch (e) { console.log(e); }
+    
     deconnexion();
   };
 

@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router'; // <-- Changement ici
+import { Stack, router } from 'expo-router'; 
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback, useContext } from 'react';
 import { View, Text, Pressable } from 'react-native';
@@ -50,7 +50,6 @@ function HeaderInfo() {
 }
 
 export default function RootLayout() {
-  const router = useRouter(); // <-- LA CLÉ EST ICI
   const [usager, setUsager] = useState(null);
   const [panier, setPanier] = useState([]);
   const [langue, setLangue] = useState('fr-CA');
@@ -78,19 +77,12 @@ export default function RootLayout() {
   }, []);
 
   const deconnexion = () => {
-    // 1. On force la navigation EN PREMIER vers le login
-    router.replace('/');
-    
-    // 2. On attend une fraction de seconde avant de détruire le contexte 
-    // pour ne pas annuler la navigation en cours !
-    setTimeout(() => {
-      setUsager(null);
-      setPanier([]);
-    }, 100);
+setUsager(null);
+    setPanier([]);    router.replace('/');
   };
 
   return (
-    <SQLiteProvider databaseName="pfi.db" onInit={onInit}>
+    <SQLiteProvider databaseName="pfi3.db" onInit={onInit}>
       <GlobalContext.Provider value={{ usager, setUsager, panier, setPanier, langue, setLangue: changerLangue, deconnexion }}>
         <Stack screenOptions={{ headerRight: () => <HeaderInfo /> }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />

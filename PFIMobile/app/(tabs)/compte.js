@@ -15,7 +15,13 @@ export default function CompteClient() {
 
   // Assure-toi que la page réagit au changement de langue
   i18n.locale = langue;
-
+useEffect(() => {
+    if (usager) {
+      setMdp(usager.mdp);
+      setAdresse(usager.adresse);
+      setLangSelect(usager.langue);
+    }
+  }, [usager]);
   const sauvegarder = async () => {
     if (!usager) return;
 

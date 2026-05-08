@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, Image, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, Alert, Pressable } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlobalContext } from '../../../Context';
@@ -12,8 +12,10 @@ export default function DetailsProduit() {
   const { id } = useLocalSearchParams();
   const db = useSQLiteContext();
   const [produit, setProduit] = useState(null);
-const { setPanier, langue } = useContext(GlobalContext);
+  const { setPanier, langue } = useContext(GlobalContext);
+
   i18n.locale = langue;
+
   useEffect(() => {
     async function load() {
       const prod = await db.getFirstAsync('SELECT * FROM Produit WHERE id = ?', [id]);
@@ -30,7 +32,7 @@ const { setPanier, langue } = useContext(GlobalContext);
 
   const ajouterAuPanier = () => {
     setPanier((precedent) => [...precedent, produit]);
-    Alert.alert('Succes', 'Produit ajoute au panier.');
+    Alert.alert('Succès', 'Produit ajouté au panier.');
   };
 
   return (
@@ -39,7 +41,13 @@ const { setPanier, langue } = useContext(GlobalContext);
       <Text style={styles.name}>{produit.nom}</Text>
       <Text style={styles.desc}>{produit.description}</Text>
       <Text style={styles.price}>{formatter.format(produit.prix)}</Text>
-      <Button title={i18n.t('ajout')} onPress={ajouterAuPanier} />
+      
+      {/* ON UTILISE UN PRESSABLE POUR S'ASSURER QU'IL EST TOUJOURS VISIBLE ET CLIQUABLE */}
+      <Pressable onPress={ajouterAuPanier} style={styles.btnAjout}>
+        <Text style={styles.btnText}>
+           {i18n.t('ajout') || 'Ajouter au panier'}
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -50,5 +58,6 @@ const styles = StyleSheet.create({
   name: { fontSize: 28, fontWeight: 'bold', marginBottom: 10 },
   desc: { fontSize: 16, textAlign: 'center', color: '#666', marginBottom: 15 },
   price: { fontSize: 22, fontWeight: 'bold', color: '#2ecc71', marginBottom: 20 },
+  btnAjout: { backgroundColor: '#2ecc71', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center', marginTop: 20 },
+  btnText: { color: 'white', fontWeight: 'bold', fontSize: 18 }
 });
-
