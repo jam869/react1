@@ -34,7 +34,7 @@ export default function Accueil() {
       return;
     }
 
-    router.replace('/(tabs)/produits');
+    router.replace('/produits'); 
   };
 
   return (

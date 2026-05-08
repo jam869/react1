@@ -5,6 +5,8 @@ import { View, Text, Pressable } from 'react-native';
 
 export const GlobalContext = createContext();
 let mainDbConnection = null;
+let dejaInitialise = false; // La variable anti-boucle
+
 const normaliserUsager = (u) => {
   if (!u) return null;
   return { ...u, admin: Number(u.admin) };
@@ -75,6 +77,8 @@ export default function RootLayout() {
   const [langue, setLangue] = useState('fr-CA');
 
   const initialiserDbEtSession = async (db) => {
+    if (dejaInitialise) return; // Empêche le clignotement
+
     mainDbConnection = db;
     await migrateDbIfNeeded(db);
     const session = await withDbLockRetry(() => db.getFirstAsync('SELECT clientId FROM Session ORDER BY id DESC LIMIT 1'));
@@ -86,6 +90,7 @@ export default function RootLayout() {
         setLangue(userNormalise.langue || 'fr-CA');
       }
     }
+    dejaInitialise = true; // Marque comme terminé
   };
 
   const deconnexion = async () => {
@@ -106,7 +111,7 @@ export default function RootLayout() {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 10 }}>
         <Text>{usager.nom} ({langue})</Text>
         <Pressable onPress={deconnexion}>
-          <Text style={{ color: 'red' }}>Deconnexion</Text>
+          <Text style={{ color: 'red' }}>Déconnexion</Text>
         </Pressable>
       </View>
     ) : null
@@ -119,7 +124,7 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="admin" options={{ title: 'Administration' }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="entrepots" options={{ title: 'Nos Entrepots' }} />
+          <Stack.Screen name="entrepots" options={{ title: 'Nos Entrepôts' }} />
         </Stack>
       </GlobalContext.Provider>
     </SQLiteProvider>

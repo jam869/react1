@@ -8,6 +8,7 @@ import Intl from 'intl';
 import 'intl/locale-data/jsonp/fr-CA';
 import 'intl/locale-data/jsonp/en-CA';
 
+
 export default function ListeProduits() {
   const db = useSQLiteContext();
   const router = useRouter();
@@ -45,11 +46,11 @@ export default function ListeProduits() {
         data={produits}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <Pressable
+        <Pressable
             style={styles.card}
             onPress={() =>
               router.push({
-                pathname: '/(tabs)/produits/details',
+                pathname: '/produits/details', 
                 params: { id: item.id },
               })
             }
@@ -106,4 +107,3 @@ const styles = StyleSheet.create({
     color: '#ccc',
   },
 });
-
