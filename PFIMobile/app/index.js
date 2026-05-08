@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, Pressable, Image, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -8,50 +8,11 @@ import { i18n } from '../locales/i18n';
 export default function Accueil() {
   const [nom, setNom] = useState('');
   const [mdp, setMdp] = useState('');
+  
   const router = useRouter();
   const db = useSQLiteContext();
-  const { usager, setUsager, setLangue } = useContext(GlobalContext);
+  const { setUsager, setLangue } = useContext(GlobalContext);
 
-  // 1. Vérification sécurisée de la session au démarrage
-  useEffect(() => {
-    let isMounted = true; // Protection contre le Hot Reload
-
-    async function verifierSession() {
-      try {
-        const session = await db.getFirstAsync('SELECT clientId FROM Session ORDER BY id DESC LIMIT 1');
-        
-        if (session?.clientId && isMounted) {
-          const user = await db.getFirstAsync('SELECT * FROM Client WHERE id = ?', [session.clientId]);
-          if (user && isMounted) {
-            const userNormalise = { ...user, admin: Number(user.admin) };
-            setUsager(userNormalise);
-            setLangue(userNormalise.langue || 'fr-CA');
-            i18n.locale = userNormalise.langue || 'fr-CA';
-          }
-        }
-      } catch (erreur) {
-        console.log("Session non trouvée ou erreur SQLite ignorée au démarrage :", erreur);
-      }
-    }
-
-    verifierSession();
-
-    // Si on quitte l'écran, on annule pour éviter les crashs
-    return () => { isMounted = false; };
-  }, [db, setUsager, setLangue]);
-
-  // 2. Navigation Automatique (Source unique de vérité)
-  useEffect(() => {
-    if (usager) {
-      if (Number(usager.admin) === 1) {
-        router.replace('/admin');
-      } else {
-        router.replace('/produits/index'); // Bien mettre /index ici !
-      }
-    }
-  }, [usager, router]);
-
-  // 3. Bouton de Connexion
   const handleLogin = async () => {
     try {
       if (!nom || !mdp) {
@@ -59,6 +20,7 @@ export default function Accueil() {
         return;
       }
 
+      // Vérification des identifiants dans la base de données
       const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [
         nom.trim(),
         mdp,
@@ -69,22 +31,23 @@ export default function Accueil() {
         return;
       }
 
-   // ... (suite de ta fonction handleLogin après la vérification du mot de passe)
       const userNormalise = { ...user, admin: Number(user.admin) };
+      
+      // On enregistre la session physiquement dans SQLite
       await db.runAsync('DELETE FROM Session');
-      await db.runAsync('INSERT INTO Session (id, clientId) VALUES (1, ?)', [userNormalise.id]);
+      await db.runAsync('INSERT INTO Session (clientId) VALUES (?)', [userNormalise.id]);
 
-      // Mise à jour de tes variables globales
+      // On met à jour les variables globales (Contexte)
       setUsager(userNormalise);
       const langueChoisie = userNormalise.langue || 'fr-CA';
       setLangue(langueChoisie);
       i18n.locale = langueChoisie;
 
-      // On vide les champs
+      // On vide les champs du formulaire
       setNom('');
       setMdp('');
 
-      // La vraie route sans (tabs) et sans le mot index !
+      // Navigation directe vers la bonne route
       if (userNormalise.admin === 1) {
         router.replace('/admin');
       } else {
@@ -105,8 +68,19 @@ export default function Accueil() {
         style={styles.logo}
       />
 
-      <TextInput placeholder="Nom d'utilisateur" value={nom} onChangeText={setNom} style={styles.input} />
-      <TextInput placeholder="Mot de passe" secureTextEntry value={mdp} onChangeText={setMdp} style={styles.input} />
+      <TextInput 
+        placeholder="Nom d'utilisateur" 
+        value={nom} 
+        onChangeText={setNom} 
+        style={styles.input} 
+      />
+      <TextInput 
+        placeholder="Mot de passe" 
+        secureTextEntry 
+        value={mdp} 
+        onChangeText={setMdp} 
+        style={styles.input} 
+      />
 
       <Pressable onPress={handleLogin} style={styles.button}>
         <Text style={styles.buttonText}>Se connecter</Text>

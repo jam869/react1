@@ -1,6 +1,6 @@
 import { Stack, router } from 'expo-router';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
-import { createContext, useState, useCallback, useContext } from 'react';
+import { useState, useCallback, useContext, useEffect } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { GlobalContext } from '../Context';
 import { i18n } from '../locales/i18n';
@@ -11,7 +11,7 @@ async function migrateDbIfNeeded(db) {
   await db.runAsync(`CREATE TABLE IF NOT EXISTS Produit (id INTEGER PRIMARY KEY NOT NULL, nom TEXT NOT NULL, description TEXT, prix REAL NOT NULL, image TEXT)`);
   await db.runAsync(`CREATE TABLE IF NOT EXISTS Session (id INTEGER PRIMARY KEY NOT NULL, clientId INTEGER NOT NULL)`);
 
-  // Insertion des 7 voitures Auto Prestige
+  // Données de base
   await db.runAsync(`INSERT OR IGNORE INTO Produit (id, nom, prix, image, description) VALUES
     (1, 'Ford Mustang Ecoboost 2026', 50794, 'https://via.placeholder.com/150', 'Décapotable puissante'),
     (2, 'BMW 8 Series M850i 2026', 162298, 'https://via.placeholder.com/150', 'Luxe et performance'),
@@ -20,63 +20,76 @@ async function migrateDbIfNeeded(db) {
     (5, 'Dodge Charger Scat Pack 2026', 84188, 'https://via.placeholder.com/150', 'Muscle car moderne'),
     (6, 'Volkswagen Golf Trendline 2012', 4995, 'https://via.placeholder.com/150', 'Compacte manuelle'),
     (7, 'GMC Terrain SLE2 2014', 5966, 'https://via.placeholder.com/150', 'AWD spacieux');`);
-    await db.runAsync("INSERT OR IGNORE INTO Client (id, nom, mdp, admin, langue) VALUES (1, 'admin', 'admin', 1, 'fr-CA')");
+  await db.runAsync("INSERT OR IGNORE INTO Client (id, nom, mdp, admin, langue) VALUES (1, 'admin', 'admin', 1, 'fr-CA')");
   await db.runAsync("INSERT OR IGNORE INTO Client (id, nom, mdp, admin, langue) VALUES (2, 'client', 'client', 0, 'fr-CA')");
 }
 
+// Composant pour l'en-tête utilisé par le Stack
+function HeaderInfo() {
+  const { usager, deconnexion } = useContext(GlobalContext);
+  if (!usager) return null;
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
+      <Text style={{ fontWeight: 'bold' }}>{usager.nom}</Text>
+      <Pressable onPress={deconnexion}>
+        <Text style={{ color: 'red' }}>Déconnexion</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+// Ce composant interne permet d'utiliser useSQLiteContext car il est ENFANT de SQLiteProvider
+function AppContent() {
+  const { usager, setUsager, setLangue } = useContext(GlobalContext);
+  const db = useSQLiteContext();
+
+  useEffect(() => {
+    async function chargerSession() {
+      const session = await db.getFirstAsync('SELECT clientId FROM Session LIMIT 1');
+      if (session) {
+        const user = await db.getFirstAsync('SELECT * FROM Client WHERE id = ?', [session.clientId]);
+        if (user) {
+          setUsager({ ...user, admin: Number(user.admin) });
+          setLangue(user.langue || 'fr-CA');
+          i18n.locale = user.langue || 'fr-CA';
+        }
+      }
+    }
+    chargerSession();
+  }, [db]);
+
+  return (
+    <Stack screenOptions={{ headerRight: () => <HeaderInfo /> }}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="admin" options={{ title: 'Administration' }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="entrepots" options={{ title: 'Nos Entrepôts' }} />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [usager, setUsager] = useState(null);
   const [panier, setPanier] = useState([]);
   const [langue, setLangue] = useState('fr-CA');
 
-  const changerLangue = (nouvelleLangue) => {
-    setLangue(nouvelleLangue);
-    i18n.locale = nouvelleLangue;
-  };
-
   const onInit = useCallback(async (db) => {
     await migrateDbIfNeeded(db);
   }, []);
 
-  const deconnexion = () => {
+  const deconnexion = async () => {
+    // La déconnexion doit aussi vider la table Session dans la BD !
     setUsager(null);
     setPanier([]);
     router.replace('/');
   };
-  
-
 
   return (
     <SQLiteProvider databaseName="pfi.db" onInit={onInit}>
-      {/* ATTENTION ICI : on passe setLangue: changerLangue */}
-      <GlobalContext.Provider value={{ usager, setUsager, panier, setPanier, langue, setLangue: changerLangue, deconnexion }}>
-          <Stack screenOptions={{ headerRight: () => <HeaderInfo /> }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="admin" options={{ title: 'Administration' }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="entrepots" options={{ title: 'Nos Entrepôts' }} />
-        </Stack>
+      <GlobalContext.Provider value={{ usager, setUsager, panier, setPanier, langue, setLangue, deconnexion }}>
+        <AppContent />
       </GlobalContext.Provider>
     </SQLiteProvider>
-  );
-}
-
-function HeaderInfo() {
-  const { usager, deconnexion } = useContext(GlobalContext);
-  const dbContext = useSQLiteContext(); 
-  
-  if (!usager) return null;
-
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
-      <Text style={{ fontWeight: 'bold' }}>{usager.nom}</Text>
-      <Pressable onPress={async () => {
-        await dbContext.runAsync('DELETE FROM Session'); 
-        deconnexion(); 
-      }}>
-        <Text style={{ color: 'red' }}>Déconnexion</Text>
-      </Pressable>
-    </View>
   );
 }
