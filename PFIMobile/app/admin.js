@@ -32,12 +32,7 @@ export default function AdminScreen() {
 if (!usager || Number(usager.admin) !== 1) {
   return (
     <View style={styles.container}>
-      <Text style={{ textAlign: 'center', marginTop: 40 }}>Acces admin requis.</Text>
-      
-      {/* Ajoute le bouton ici pour ne jamais rester bloqué */}
-      <Pressable onPress={deconnexion} style={[styles.buttonLogout, { marginTop: 20 }]}>
-        <Text style={styles.buttonText}>Déconnexion</Text>
-      </Pressable>
+      <Text style={{ textAlign: 'center', marginTop: 40 }}>Acces admin requis.</Text>    
     </View>
   );
 }

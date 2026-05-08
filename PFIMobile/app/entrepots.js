@@ -37,8 +37,7 @@ export default function Entrepots() {
       <MapView
         style={{ height: height * 0.75, width }}
         provider={PROVIDER_GOOGLE}
-        region={region}
-        onRegionChangeComplete={setRegion}
+        initialRegion={region}
       >
         <Marker coordinate={{ latitude: 45.4735, longitude: -73.5639 }} title="Maison">
           <Ionicons name="home" size={30} color="red" />

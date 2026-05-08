@@ -2,7 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Image, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { GlobalContext } from './_layout';
+import { GlobalContext } from '../_Context';
+import { i18n } from '../locales/i18n';
 
 export default function Accueil() {
   const [nom, setNom] = useState('');
@@ -21,6 +22,7 @@ export default function Accueil() {
           const userNormalise = { ...user, admin: Number(user.admin) };
           setUsager(userNormalise);
           setLangue(userNormalise.langue || 'fr-CA');
+          i18n.locale = userNormalise.langue || 'fr-CA';
           
           if (userNormalise.admin === 1) {
             router.replace('/admin');
@@ -50,7 +52,7 @@ export default function Accueil() {
 
     setUsager(userNormalise);
     setLangue(userNormalise.langue || 'fr-CA');
-
+i18n.locale = userNormalise.langue || 'fr-CA';
     if (Number(userNormalise.admin) === 1) {
       router.replace('/admin');
       return;

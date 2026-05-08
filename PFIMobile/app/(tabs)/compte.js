@@ -59,10 +59,6 @@ export default function CompteClient() {
           <Text style={styles.actionText}>Voir nos entrepots</Text>
         </Pressable>
       </Link>
-
-      <Pressable onPress={deconnexion} style={styles.logoutBtn}>
-        <Text style={styles.actionText}>Deconnexion</Text>
-      </Pressable>
     </View>
   );
 }
@@ -77,6 +73,5 @@ const styles = StyleSheet.create({
   radioBtnActive: { backgroundColor: 'blue', borderColor: 'blue' },
   saveBtn: { backgroundColor: 'green', padding: 15, borderRadius: 5, marginTop: 10 },
   mapBtn: { backgroundColor: '#e67e22', padding: 15, borderRadius: 5, marginTop: 20 },
-  logoutBtn: { backgroundColor: '#c0392b', padding: 15, borderRadius: 5, marginTop: 20 },
   actionText: { color: 'white', textAlign: 'center', fontWeight: 'bold' },
 });
