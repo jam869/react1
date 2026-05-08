@@ -3,7 +3,7 @@ import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { createContext, useState, useCallback } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { GlobalContext } from './_Context'; 
-
+import { i18n } from './locales/i18n';
 
 async function migrateDbIfNeeded(db) {
   await db.execAsync('PRAGMA journal_mode = WAL;');
@@ -60,7 +60,7 @@ export default function RootLayout() {
 };
 
   return (
-    <SQLiteProvider databaseName="pfi.db1" onInit={onInit}>
+    <SQLiteProvider databaseName="pfimobile1.db" onInit={onInit}>
       {/* ATTENTION ICI : on passe setLangue: changerLangue */}
       <GlobalContext.Provider value={{ usager, setUsager, panier, setPanier, langue, setLangue: changerLangue, deconnexion }}>
           <Stack screenOptions={{ headerRight: () => <HeaderInfo /> }}>

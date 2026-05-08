@@ -22,7 +22,6 @@ export default function Accueil() {
           const userNormalise = { ...user, admin: Number(user.admin) };
           setUsager(userNormalise);
           setLangue(userNormalise.langue || 'fr-CA');
-          i18n.locale = userNormalise.langue || 'fr-CA';
           
           if (userNormalise.admin === 1) {
             router.replace('/admin');

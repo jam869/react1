@@ -39,9 +39,7 @@ if (!usager || Number(usager.admin) !== 1) {
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={deconnexion} style={styles.buttonLogout}>
-        <Text style={styles.buttonText}>Deconnexion</Text>
-      </Pressable>
+    
 
       <Pressable onPress={ajouterProduit} style={styles.buttonAdd}>
         <Text style={styles.buttonText}>+ Ajouter un produit</Text>
@@ -77,7 +75,6 @@ if (!usager || Number(usager.admin) !== 1) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 15 },
-  buttonLogout: { backgroundColor: '#c0392b', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 10 },
   buttonAdd: { backgroundColor: 'green', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 15 },
   buttonText: { color: 'white', fontWeight: 'bold' },
   card: { flexDirection: 'row', alignItems: 'center', padding: 10, borderWidth: 1, borderColor: '#ccc', marginBottom: 10, borderRadius: 8 },
