@@ -1,0 +1,70 @@
+import React, { useState, useContext } from 'react';
+import { View, Text, TextInput, Pressable, Image, StyleSheet, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import { GlobalContext } from './_layout';
+
+export default function Accueil() {
+  const [nom, setNom] = useState('');
+  const [mdp, setMdp] = useState('');
+  const router = useRouter();
+  const db = useSQLiteContext();
+  const { setUsager, setLangue } = useContext(GlobalContext);
+
+  const handleLogin = async () => {
+    const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [
+      nom.trim(),
+      mdp,
+    ]);
+
+    if (!user) {
+      Alert.alert('Erreur', "Nom d'utilisateur ou mot de passe incorrect.");
+      return;
+    }
+
+    const userNormalise = { ...user, admin: Number(user.admin) };
+    await db.runAsync('DELETE FROM Session');
+    await db.runAsync('INSERT INTO Session (id, clientId) VALUES (1, ?)', [userNormalise.id]);
+
+    setUsager(userNormalise);
+    setLangue(userNormalise.langue || 'fr-CA');
+
+    if (Number(userNormalise.admin) === 1) {
+      router.replace('/admin');
+      return;
+    }
+
+    router.replace('/(tabs)/produits');
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Auto Prestige</Text>
+      <Image
+        source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR38cpx6uXtYmLcjVefkuX-8F0xpeU_6o9Nw&s' }}
+        style={styles.logo}
+      />
+
+      <TextInput placeholder="Nom d'utilisateur" value={nom} onChangeText={setNom} style={styles.input} />
+      <TextInput placeholder="Mot de passe" secureTextEntry value={mdp} onChangeText={setMdp} style={styles.input} />
+
+      <Pressable onPress={handleLogin} style={styles.button}>
+        <Text style={styles.buttonText}>Se connecter</Text>
+      </Pressable>
+
+      <View style={styles.footer}>
+        <Text>Cree par : Nathan Aguiar & Zachary Belanger</Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
+  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 20 },
+  logo: { width: 150, height: 150, marginBottom: 30 },
+  input: { borderWidth: 1, width: '100%', marginBottom: 15, padding: 12, borderRadius: 8 },
+  button: { backgroundColor: '#007AFF', padding: 15, borderRadius: 8, width: '100%', alignItems: 'center' },
+  buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  footer: { position: 'absolute', bottom: 30 },
+});
