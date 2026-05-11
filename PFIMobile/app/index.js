@@ -14,6 +14,7 @@ export default function Accueil() {
   const { setUsager, setLangue } = useContext(GlobalContext);
 
   const handleLogin = async () => {
+    console.log('--- TENTATIVE DE CONNEXION ---', { nom, mdp });
     try {
       if (!nom || !mdp) {
         Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
@@ -25,6 +26,7 @@ export default function Accueil() {
         nom.trim(),
         mdp,
       ]);
+      console.log('Utilisateur trouvé en BD:', user);
 
       if (!user) {
         Alert.alert('Erreur', "Nom d'utilisateur ou mot de passe incorrect.");
@@ -32,16 +34,19 @@ export default function Accueil() {
       }
 
       const userNormalise = { ...user, admin: Number(user.admin) };
+      console.log('Utilisateur normalisé:', userNormalise);
       
       // On enregistre la session physiquement dans SQLite
       await db.runAsync('DELETE FROM Session');
       await db.runAsync('INSERT INTO Session (clientId) VALUES (?)', [userNormalise.id]);
+      console.log('Session enregistrée en BD');
 
       // On met à jour les variables globales (Contexte)
       setUsager(userNormalise);
       const langueChoisie = userNormalise.langue || 'fr-CA';
       setLangue(langueChoisie);
       i18n.locale = langueChoisie;
+      console.log('Contexte mis à jour (usager + langue)');
 
       // On vide les champs du formulaire
       setNom('');
@@ -49,8 +54,10 @@ export default function Accueil() {
 
       // Navigation directe vers la bonne route
       if (userNormalise.admin === 1) {
+        console.log('Redirection vers /admin');
         router.replace('/admin');
       } else {
+        console.log('Redirection vers /produits');
         router.replace('/produits'); 
       }
 

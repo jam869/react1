@@ -7,11 +7,13 @@ import { View, Text, Pressable } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 
 export default function TabLayout() {
-  const { langue, usager, deconnexion } = useContext(GlobalContext);
+  const { langue, usager, deconnexion, theme } = useContext(GlobalContext);
   const db = useSQLiteContext();
   
   i18n.locale = langue;
-const handleLogout = async () => {
+  const isDark = theme === 'dark';
+
+  const handleLogout = async () => {
     try {
       await db.runAsync('DELETE FROM Session');
     } catch (e) { console.log(e); }
@@ -22,13 +24,23 @@ const handleLogout = async () => {
   return (
     <Tabs 
       screenOptions={{ 
-        tabBarActiveTintColor: '#007AFF',
+        tabBarActiveTintColor: '#2ecc71',
+        tabBarInactiveTintColor: isDark ? '#888' : '#aaa',
+        tabBarStyle: { 
+          backgroundColor: isDark ? '#1a1a1a' : '#fff',
+          borderTopColor: isDark ? '#333' : '#eee'
+        },
+        headerStyle: { 
+          backgroundColor: isDark ? '#1a1a1a' : '#fff',
+          borderBottomColor: isDark ? '#333' : '#eee'
+        },
+        headerTintColor: isDark ? '#fff' : '#000',
         headerRight: () => (
           usager ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
-              <Text style={{ fontWeight: 'bold' }}>{usager.nom}</Text>
+              <Text style={{ fontWeight: 'bold', color: isDark ? '#fff' : '#000' }}>{usager.nom}</Text>
               <Pressable onPress={handleLogout}>
-                <Text style={{ color: 'red' }}>Déconnexion</Text>
+                <Text style={{ color: '#e74c3c', fontWeight: 'bold' }}>Déconnexion</Text>
               </Pressable>
             </View>
           ) : null

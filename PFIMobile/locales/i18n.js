@@ -5,12 +5,16 @@ const translations = {
   'en-CA': { 
     produits: 'Products', panier: 'Cart', compte: 'Account', acheter: 'Buy', total: 'Total:', vide: 'Empty cart', ajout: 'Add to cart',
     non_connecte: 'Not connected', nom_label: 'Name (read-only):', mdp_label: 'Password:', adresse_label: 'Address:', 
-    langue_label: 'Preferred language:', sauvegarder: 'Save', voir_entrepots: 'Our Warehouses', succes_maj: 'Success: Information updated.'
+    langue_label: 'Preferred language:', sauvegarder: 'Save', voir_entrepots: 'Our Warehouses', succes_maj: 'Success: Information updated.',
+    sous_total: 'Subtotal:', vider: 'Empty', merci_titre: 'Thank you!', merci_message: 'Your purchase has been completed successfully.',
+    recherche_placeholder: 'Search for a vehicle...', dark_mode: 'Dark Mode', auto: 'Auto'
   },
   'fr-CA': { 
     produits: 'Produits', panier: 'Panier', compte: 'Compte', acheter: 'Acheter', total: 'Total :', vide: 'Panier vide', ajout: 'Ajouter au panier',
     non_connecte: 'Non connecté', nom_label: 'Nom (non modifiable) :', mdp_label: 'Mot de passe :', adresse_label: 'Adresse :', 
-    langue_label: 'Langue préférée :', sauvegarder: 'Sauvegarder', voir_entrepots: 'Nos Entrepôts', succes_maj: 'Succès : Informations mises à jour.'
+    langue_label: 'Langue préférée :', sauvegarder: 'Sauvegarder', voir_entrepots: 'Nos Entrepôts', succes_maj: 'Succès : Informations mises à jour.',
+    sous_total: 'Sous-total :', vider: 'Vider', merci_titre: 'Merci !', merci_message: 'Votre achat a été complété avec succès.',
+    recherche_placeholder: 'Rechercher un véhicule...', dark_mode: 'Mode Sombre', auto: 'Auto'
   },
 };
 

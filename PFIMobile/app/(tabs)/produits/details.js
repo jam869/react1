@@ -4,17 +4,14 @@ import { useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlobalContext } from '../../../Context';
 import { i18n } from '../../../locales/i18n';
-import Intl from 'intl';
-import 'intl/locale-data/jsonp/fr-CA';
-import 'intl/locale-data/jsonp/en-CA';
 
 export default function DetailsProduit() {
   const { id } = useLocalSearchParams();
   const db = useSQLiteContext();
   const [produit, setProduit] = useState(null);
-  const { setPanier, langue } = useContext(GlobalContext);
+  const { setPanier, langue, theme } = useContext(GlobalContext);
 
-  i18n.locale = langue;
+  i18n.locale = langue === 'auto' ? 'fr-CA' : langue;
 
   useEffect(() => {
     async function load() {
@@ -28,19 +25,62 @@ export default function DetailsProduit() {
     return <Text style={{ textAlign: 'center', marginTop: 50 }}>Chargement...</Text>;
   }
 
-  const formatter = new Intl.NumberFormat(langue, { style: 'currency', currency: 'CAD' });
+  const formaterPrix = (montant) => {
+    try {
+      return new Intl.NumberFormat(langue === 'auto' ? 'fr-CA' : langue, { 
+        style: 'currency', 
+        currency: 'CAD' 
+      }).format(montant);
+    } catch (e) {
+      return Number(montant).toFixed(2) + ' $';
+    }
+  };
 
   const ajouterAuPanier = () => {
-    setPanier((precedent) => [...precedent, produit]);
-    Alert.alert('Succès', 'Produit ajouté au panier.');
+    console.log('--- AJOUT AU PANIER ---', produit.nom);
+    setPanier((precedent) => {
+      console.log('État panier précédent:', precedent);
+      const existe = precedent.find((item) => item.id === produit.id);
+      let nouveauPanier;
+      if (existe) {
+        nouveauPanier = precedent.map((item) =>
+          item.id === produit.id ? { ...item, quantite: item.quantite + 1 } : item
+        );
+      } else {
+        nouveauPanier = [...precedent, { ...produit, quantite: 1 }];
+      }
+      console.log('Nouvel état panier calculé:', nouveauPanier);
+      return nouveauPanier;
+    });
+    Alert.alert(i18n.t('succes') || 'Succès', i18n.t('produit_ajoute') || 'Produit ajouté au panier.');
+  };
+
+  const RenduEtoiles = ({ note }) => {
+    return (
+      <View style={{ flexDirection: 'row', marginVertical: 10 }}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Text key={i} style={{ fontSize: 24, color: i <= note ? '#f1c40f' : '#bdc3c7' }}>
+            ★
+          </Text>
+        ))}
+      </View>
+    );
+  };
+
+  const isDark = theme === 'dark';
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? '#121212' : '#fff' },
+    text: { color: isDark ? '#fff' : '#000' },
+    desc: { color: isDark ? '#bbb' : '#666' }
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dynamicStyles.container]}>
       <Image source={{ uri: produit.image }} style={styles.image} />
-      <Text style={styles.name}>{produit.nom}</Text>
-      <Text style={styles.desc}>{produit.description}</Text>
-      <Text style={styles.price}>{formatter.format(produit.prix)}</Text>
+      <Text style={[styles.name, dynamicStyles.text]}>{produit.nom}</Text>
+      <RenduEtoiles note={4} />
+      <Text style={[styles.desc, dynamicStyles.desc]}>{produit.description}</Text>
+      <Text style={styles.price}>{formaterPrix(produit.prix)}</Text>
       
       {/* ON UTILISE UN PRESSABLE POUR S'ASSURER QU'IL EST TOUJOURS VISIBLE ET CLIQUABLE */}
       <Pressable onPress={ajouterAuPanier} style={styles.btnAjout}>

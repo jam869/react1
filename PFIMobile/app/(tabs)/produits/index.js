@@ -1,22 +1,19 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, FlatList, Pressable, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Pressable, Image, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlobalContext } from '../../../Context';
 import { i18n } from '../../../locales/i18n';
-import Intl from 'intl';
-import 'intl/locale-data/jsonp/fr-CA';
-import 'intl/locale-data/jsonp/en-CA';
-
 
 export default function ListeProduits() {
   const db = useSQLiteContext();
   const router = useRouter();
-  const { langue } = useContext(GlobalContext);
+  const { langue, theme } = useContext(GlobalContext);
   const [produits, setProduits] = useState([]);
   const [chargement, setChargement] = useState(true);
+  const [recherche, setRecherche] = useState('');
 
-  i18n.locale = langue;
+  i18n.locale = langue === 'auto' ? 'fr-CA' : langue;
 
   useEffect(() => {
     let actif = true;
@@ -41,22 +38,52 @@ export default function ListeProduits() {
     };
   }, [db]);
 
-  const formaterPrix = (prix) => {
-    return new Intl.NumberFormat(langue, { style: 'currency', currency: 'CAD' }).format(prix);
+  const formaterPrix = (montant) => {
+    try {
+      return new Intl.NumberFormat(langue === 'auto' ? 'fr-CA' : langue, { 
+        style: 'currency', 
+        currency: 'CAD' 
+      }).format(montant);
+    } catch (e) {
+      return Number(montant).toFixed(2) + ' $';
+    }
   };
 
   if (chargement) {
     return <ActivityIndicator style={{ flex: 1 }} size="large" />;
   }
 
+  const produitsFiltrés = produits.filter((p) =>
+    p.nom.toLowerCase().includes(recherche.toLowerCase())
+  );
+
+  const isDark = theme === 'dark';
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? '#121212' : '#fff' },
+    text: { color: isDark ? '#fff' : '#333' },
+    card: { borderBottomColor: isDark ? '#333' : '#eee' },
+    search: { 
+      backgroundColor: isDark ? '#1e1e1e' : '#f0f0f0',
+      color: isDark ? '#fff' : '#000',
+      borderColor: isDark ? '#333' : '#ccc'
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dynamicStyles.container]}>
+      <TextInput
+        style={[styles.searchBar, dynamicStyles.search]}
+        placeholder={i18n.t('recherche_placeholder')}
+        placeholderTextColor={isDark ? '#888' : '#aaa'}
+        value={recherche}
+        onChangeText={setRecherche}
+      />
       <FlatList
-        data={produits}
+        data={produitsFiltrés}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
         <Pressable
-            style={styles.card}
+            style={[styles.card, dynamicStyles.card]}
             onPress={() =>
               router.push({
                 pathname: '/produits/details',
@@ -67,7 +94,7 @@ export default function ListeProduits() {
             <Image source={{ uri: item.image }} style={styles.miniature} />
 
             <View style={styles.infoContainer}>
-              <Text style={styles.nomVoiture}>{item.nom}</Text>
+              <Text style={[styles.nomVoiture, dynamicStyles.text]}>{item.nom}</Text>
               <Text style={styles.prixVoiture}>{formaterPrix(item.prix)}</Text>
             </View>
 
@@ -83,6 +110,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  searchBar: {
+    margin: 10,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    fontSize: 16,
   },
   card: {
     flexDirection: 'row',
