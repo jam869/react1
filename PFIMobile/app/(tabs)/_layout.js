@@ -36,7 +36,7 @@ const handleLogout = async () => {
       }}
     >
       <Tabs.Screen 
-        name="produits/index" 
+        name="produits" 
         options={{ 
           title: i18n.t("produits") || "Produits", 
           tabBarIcon: ({ color }) => <Ionicons name="list" size={24} color={color} /> 

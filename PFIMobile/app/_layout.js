@@ -82,7 +82,7 @@ setUsager(null);
   };
 
   return (
-    <SQLiteProvider databaseName="pfi3.db" onInit={onInit}>
+    <SQLiteProvider databaseName="pfi.db" onInit={onInit}>
       <GlobalContext.Provider value={{ usager, setUsager, panier, setPanier, langue, setLangue: changerLangue, deconnexion }}>
         <Stack screenOptions={{ headerRight: () => <HeaderInfo /> }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />

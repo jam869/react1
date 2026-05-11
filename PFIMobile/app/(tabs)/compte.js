@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Link } from 'expo-router';
