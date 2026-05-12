@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Pressable, Image, useWindowDimensions
 import MapView, { Marker, Circle, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import PATH_TO_HOME from '../../../assets/path.json';
 
 const WAREHOUSES = [
   { id: 1, name: 'Entrepôt Laval', latitude: 45.5601, longitude: -73.7120, title: 'Laval Branch' },
@@ -13,17 +14,6 @@ const WAREHOUSES = [
 ];
 
 const HOME = { latitude: 45.5088, longitude: -73.5540, name: 'Ma Maison' };
-
-// 7+ coordinates for the path from Downtown (nearest) to Home
-const PATH_TO_HOME = [
-  { latitude: 45.5017, longitude: -73.5673 }, // Downtown
-  { latitude: 45.5030, longitude: -73.5650 },
-  { latitude: 45.5045, longitude: -73.5620 },
-  { latitude: 45.5060, longitude: -73.5600 },
-  { latitude: 45.5070, longitude: -73.5580 },
-  { latitude: 45.5080, longitude: -73.5560 },
-  { latitude: 45.5088, longitude: -73.5540 }, // Home
-];
 
 const WAREHOUSE_ICON = 'https://cdn-icons-png.flaticon.com/512/2312/2312563.png';
 const HOME_ICON = 'https://cdn-icons-png.flaticon.com/512/25/25694.png';
