@@ -6,79 +6,77 @@ import { useCart } from '../../../context/CartContext';
 import { useTranslation } from 'react-i18next';
 import Slider from '@react-native-community/slider';
 
-export default function ProduitDetails() {
+export default function DetailsProduit() {
   const { id } = useLocalSearchParams();
-  const [product, setProduct] = useState(null);
-  const { addToCart } = useCart();
+  const [produit, setProduit] = useState(null);
+  const { addToCart: ajouterAuPanier } = useCart();
   const { t, i18n } = useTranslation();
   const router = useRouter();
 
-  // Financing state
-  const [months, setMonths] = useState(60);
-  const [interest, setInterest] = useState(5.5);
-  const [downPayment, setDownPayment] = useState(10000);
+  const [mois, setMois] = useState(60);
+  const [interet, setInteret] = useState(5.5);
+  const [acompte, setAcompte] = useState(10000);
 
   useEffect(() => {
-    const loadProduct = async () => {
-      const db = await SQLite.openDatabaseAsync('pfi_auto.db');
-      const item = await db.getFirstAsync('SELECT * FROM Produit WHERE id = ?', [id]);
-      setProduct(item);
+    const chargerProduit = async () => {
+      const bdd = await SQLite.openDatabaseAsync('pfi_auto.db');
+      const element = await bdd.getFirstAsync('SELECT * FROM Produit WHERE id = ?', [id]);
+      setProduit(element);
     };
-    loadProduct();
+    chargerProduit();
   }, [id]);
 
-  if (!product) return <View style={styles.container}><Text>Loading...</Text></View>;
+  if (!produit) return <View style={styles.container}><Text>Chargement...</Text></View>;
 
-  const formatPrice = (price) => {
+  const formaterPrix = (prix) => {
     return new Intl.NumberFormat(i18n.language === 'fr' ? 'fr-CA' : 'en-CA', {
       style: 'currency',
       currency: 'CAD',
-    }).format(price);
+    }).format(prix);
   };
 
-  const calculateMonthly = () => {
-    const principal = product.prix - downPayment;
-    const r = (interest / 100) / 12;
-    const n = months;
-    if (r === 0) return (principal / n);
-    const monthly = (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-    return monthly > 0 ? monthly : 0;
+  const calculerMensualite = () => {
+    const capital = produit.prix - acompte;
+    const tauxMensuel = (interet / 100) / 12;
+    const nombreDeMois = mois;
+    if (tauxMensuel === 0) return (capital / nombreDeMois);
+    const mensualite = (capital * tauxMensuel * Math.pow(1 + tauxMensuel, nombreDeMois)) / (Math.pow(1 + tauxMensuel, nombreDeMois) - 1);
+    return mensualite > 0 ? mensualite : 0;
   };
 
   return (
     <ScrollView style={styles.container}>
       <Stack.Screen options={{ 
         headerShown: true, 
-        title: product.nom,
+        title: produit.nom,
         headerStyle: { backgroundColor: '#0A0A0A' },
         headerTintColor: '#D4AF37'
       }} />
-      <Image source={{ uri: product.image }} style={styles.image} />
+      <Image source={{ uri: produit.image }} style={styles.image} />
       
       <View style={styles.info}>
         <View style={styles.headerRow}>
-          <Text style={styles.name}>{product.nom}</Text>
-          <Text style={styles.price}>{formatPrice(product.prix)}</Text>
+          <Text style={styles.name}>{produit.nom}</Text>
+          <Text style={styles.price}>{formaterPrix(produit.prix)}</Text>
         </View>
         
-        <Text style={styles.description}>{product.description}</Text>
+        <Text style={styles.description}>{produit.description}</Text>
         
-        {/* Advanced Extra: Interactive Financing Calculator with Sliders */}
         <View style={styles.calculator}>
           <Text style={styles.calcTitle}>{t('financing_calc')}</Text>
           
           <View style={styles.calcSection}>
             <View style={styles.labelRow}>
               <Text style={styles.calcLabel}>{t('months')}</Text>
-              <Text style={styles.calcValue}>{months}</Text>
+              <Text style={styles.calcValue}>{mois}</Text>
             </View>
             <Slider
               style={styles.slider}
               minimumValue={24}
               maximumValue={84}
               step={12}
-              value={months}
-              onValueChange={setMonths}
+              value={mois}
+              onValueChange={setMois}
               minimumTrackTintColor="#D4AF37"
               maximumTrackTintColor="#333"
               thumbTintColor="#D4AF37"
@@ -88,15 +86,15 @@ export default function ProduitDetails() {
           <View style={styles.calcSection}>
             <View style={styles.labelRow}>
               <Text style={styles.calcLabel}>{t('interest')}</Text>
-              <Text style={styles.calcValue}>{interest.toFixed(1)}%</Text>
+              <Text style={styles.calcValue}>{interet.toFixed(1)}%</Text>
             </View>
             <Slider
               style={styles.slider}
               minimumValue={0.9}
               maximumValue={12.9}
               step={0.1}
-              value={interest}
-              onValueChange={setInterest}
+              value={interet}
+              onValueChange={setInteret}
               minimumTrackTintColor="#D4AF37"
               maximumTrackTintColor="#333"
               thumbTintColor="#D4AF37"
@@ -106,15 +104,15 @@ export default function ProduitDetails() {
           <View style={styles.calcSection}>
             <View style={styles.labelRow}>
               <Text style={styles.calcLabel}>Comptant (Down payment)</Text>
-              <Text style={styles.calcValue}>{formatPrice(downPayment)}</Text>
+              <Text style={styles.calcValue}>{formaterPrix(acompte)}</Text>
             </View>
             <Slider
               style={styles.slider}
               minimumValue={0}
-              maximumValue={product.prix * 0.5}
+              maximumValue={produit.prix * 0.5}
               step={1000}
-              value={downPayment}
-              onValueChange={setDownPayment}
+              value={acompte}
+              onValueChange={setAcompte}
               minimumTrackTintColor="#D4AF37"
               maximumTrackTintColor="#333"
               thumbTintColor="#D4AF37"
@@ -123,14 +121,14 @@ export default function ProduitDetails() {
 
           <View style={styles.resultBox}>
             <Text style={styles.resultLabel}>{t('monthly_payment')}</Text>
-            <Text style={styles.monthlyResult}>{formatPrice(calculateMonthly())}</Text>
+            <Text style={styles.monthlyResult}>{formaterPrix(calculerMensualite())}</Text>
           </View>
         </View>
 
         <TouchableOpacity 
           style={styles.addButton} 
           onPress={() => {
-            addToCart(product);
+            ajouterAuPanier(produit);
             router.back();
           }}
         >

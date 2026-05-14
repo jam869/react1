@@ -6,73 +6,73 @@ import { Link } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function ComptePage() {
-  const { user, updateUser } = useAuth();
+export default function PageCompte() {
+  const { user: utilisateur, updateUser: mettreAJourUtilisateur } = useAuth();
   const { t, i18n } = useTranslation();
   
-  const [mdp, setMdp] = useState(user?.mdp || '');
-  const [adresse, setAdresse] = useState(user?.adresse || '');
-  const [langue, setLangue] = useState(user?.langue || 'auto');
+  const [motDePasse, setMotDePasse] = useState(utilisateur?.mdp || '');
+  const [adresse, setAdresse] = useState(utilisateur?.adresse || '');
+  const [langue, setLangue] = useState(utilisateur?.langue || 'auto');
 
-  if (!user) return null;
+  if (!utilisateur) return null;
 
-  const handleSave = async () => {
-    const db = await SQLite.openDatabaseAsync('pfi_auto.db');
-    await db.runAsync('UPDATE Client SET mdp = ?, adresse = ?, langue = ? WHERE nom = ?', 
-      [mdp, adresse, langue, user.nom]);
+  const gererSauvegarde = async () => {
+    const bd = await SQLite.openDatabaseAsync('pfi_auto.db');
+    await bd.runAsync('UPDATE Client SET mdp = ?, adresse = ?, langue = ? WHERE nom = ?', 
+      [motDePasse, adresse, langue, utilisateur.nom]);
     
-    updateUser({ mdp, adresse, langue });
+    mettreAJourUtilisateur({ mdp: motDePasse, adresse, langue });
     Alert.alert('Success', 'Profile updated');
   };
 
-  const LanguageOption = ({ label, value }) => (
+  const OptionLangue = ({ etiquette, valeur }) => (
     <TouchableOpacity 
-      style={styles.radioOption} 
-      onPress={() => setLangue(value)}
+      style={styles.optionRadio} 
+      onPress={() => setLangue(valeur)}
     >
       <Ionicons 
-        name={langue === value ? "radio-button-on" : "radio-button-off"} 
+        name={langue === valeur ? "radio-button-on" : "radio-button-off"} 
         size={24} 
         color="#007AFF" 
       />
-      <Text style={styles.radioLabel}>{label}</Text>
+      <Text style={styles.etiquetteRadio}>{etiquette}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>{t('account')}</Text>
+    <ScrollView style={styles.conteneur}>
+      <Text style={styles.titre}>{t('account')}</Text>
       
       <View style={styles.section}>
-        <Text style={styles.label}>{t('username')}</Text>
-        <TextInput style={[styles.input, styles.disabledInput]} value={user.nom} editable={false} />
+        <Text style={styles.etiquette}>{t('username')}</Text>
+        <TextInput style={[styles.champSaisie, styles.champDesactive]} value={utilisateur.nom} editable={false} />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>{t('password')}</Text>
-        <TextInput style={styles.input} value={mdp} onChangeText={setMdp} secureTextEntry />
+        <Text style={styles.etiquette}>{t('password')}</Text>
+        <TextInput style={styles.champSaisie} value={motDePasse} onChangeText={setMotDePasse} secureTextEntry />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>{t('address')}</Text>
-        <TextInput style={styles.input} value={adresse} onChangeText={setAdresse} />
+        <Text style={styles.etiquette}>{t('address')}</Text>
+        <TextInput style={styles.champSaisie} value={adresse} onChangeText={setAdresse} />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>{t('language')}</Text>
-        <LanguageOption label="Français" value="fr" />
-        <LanguageOption label="English" value="en" />
-        <LanguageOption label="Auto" value="auto" />
+        <Text style={styles.etiquette}>{t('language')}</Text>
+        <OptionLangue etiquette="Français" valeur="fr" />
+        <OptionLangue etiquette="English" valeur="en" />
+        <OptionLangue etiquette="Auto" valeur="auto" />
       </View>
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveText}>{t('save')}</Text>
+      <TouchableOpacity style={styles.boutonEnregistrer} onPress={gererSauvegarde}>
+        <Text style={styles.texteEnregistrer}>{t('save')}</Text>
       </TouchableOpacity>
 
       <Link href="/compte/entrepots" asChild>
-        <TouchableOpacity style={styles.linkButton}>
+        <TouchableOpacity style={styles.boutonLien}>
           <Ionicons name="map-outline" size={24} color="#007AFF" />
-          <Text style={styles.linkText}>{t('warehouses')}</Text>
+          <Text style={styles.texteLien}>{t('warehouses')}</Text>
         </TouchableOpacity>
       </Link>
     </ScrollView>
@@ -80,12 +80,12 @@ export default function ComptePage() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  conteneur: {
     flex: 1,
     backgroundColor: '#fff',
     padding: 20,
   },
-  title: {
+  titre: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 25,
@@ -93,45 +93,45 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 20,
   },
-  label: {
+  etiquette: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',
   },
-  input: {
+  champSaisie: {
     backgroundColor: '#f9f9f9',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#eee',
   },
-  disabledInput: {
+  champDesactive: {
     color: '#888',
     backgroundColor: '#eee',
   },
-  radioOption: {
+  optionRadio: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
   },
-  radioLabel: {
+  etiquetteRadio: {
     marginLeft: 10,
     fontSize: 16,
   },
-  saveButton: {
+  boutonEnregistrer: {
     backgroundColor: '#007AFF',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 20,
   },
-  saveText: {
+  texteEnregistrer: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  linkButton: {
+  boutonLien: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 50,
   },
-  linkText: {
+  texteLien: {
     marginLeft: 10,
     color: '#007AFF',
     fontSize: 16,

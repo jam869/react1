@@ -7,47 +7,46 @@ import * as SQLite from 'expo-sqlite';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function Home() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useAuth();
+export default function Accueil() {
+  const [nomUtilisateur, setNomUtilisateur] = useState('');
+  const [motDePasse, setMotDePasse] = useState('');
+  const { login: seConnecter } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
 
-  const handleLogin = async (providedUser = null) => {
-    let user = providedUser;
+  const gererConnexion = async (utilisateurFourni = null) => {
+    let utilisateur = utilisateurFourni;
     
-    if (!user) {
-      const db = await SQLite.openDatabaseAsync('pfi_auto.db');
-      user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [username, password]);
+    if (!utilisateur) {
+      const bdd = await SQLite.openDatabaseAsync('pfi_auto.db');
+      utilisateur = await bdd.getFirstAsync('SELECT * FROM Client WHERE nom = ? AND mdp = ?', [nomUtilisateur, motDePasse]);
     }
 
-    if (user) {
-      login(user);
-      if (user.admin) {
+    if (utilisateur) {
+      seConnecter(utilisateur);
+      if (utilisateur.admin) {
         router.replace('/admin');
       } else {
-        router.replace('/(tabs)/produits');
+        router.replace('/produits');
       }
     } else {
-      Alert.alert('Error', 'Invalid username or password');
+      Alert.alert('Erreur', 'Nom d\'utilisateur ou mot de passe invalide');
     }
   };
 
-  const handleBiometricAuth = async () => {
-    const hasHardware = await LocalAuthentication.hasHardwareAsync();
-    if (!hasHardware) return Alert.alert('Error', 'Biometrics not supported');
+  const gererAuthentificationBiometrique = async () => {
+    const aMateriel = await LocalAuthentication.hasHardwareAsync();
+    if (!aMateriel) return Alert.alert('Erreur', 'Biométrie non supportée');
 
-    const result = await LocalAuthentication.authenticateAsync({
+    const resultat = await LocalAuthentication.authenticateAsync({
       promptMessage: 'Authentification Auto Prestige',
       fallbackLabel: 'Utiliser mot de passe',
     });
 
-    if (result.success) {
-      const db = await SQLite.openDatabaseAsync('pfi_auto.db');
-      // For demo: log in as the default client
-      const user = await db.getFirstAsync('SELECT * FROM Client WHERE nom = ?', ['client']);
-      if (user) handleLogin(user);
+    if (resultat.success) {
+      const bdd = await SQLite.openDatabaseAsync('pfi_auto.db');
+      const utilisateur = await bdd.getFirstAsync('SELECT * FROM Client WHERE nom = ?', ['client']);
+      if (utilisateur) gererConnexion(utilisateur);
     }
   };
 
@@ -67,23 +66,23 @@ export default function Home() {
             style={styles.input}
             placeholder={t('Nom d\'utilisateur')}
             placeholderTextColor="#888"
-            value={username}
-            onChangeText={setUsername}
+            value={nomUtilisateur}
+            onChangeText={setNomUtilisateur}
           />
           <TextInput
             style={styles.input}
             placeholder={t('Mot de passe')}
             placeholderTextColor="#888"
-            value={password}
+            value={motDePasse}
             secureTextEntry
-            onChangeText={setPassword}
+            onChangeText={setMotDePasse}
           />
           
-          <TouchableOpacity style={styles.button} onPress={() => handleLogin()}>
+          <TouchableOpacity style={styles.button} onPress={() => gererConnexion()}>
             <Text style={styles.buttonText}>{t('Se connecter')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.bioButton} onPress={handleBiometricAuth}>
+          <TouchableOpacity style={styles.bioButton} onPress={gererAuthentificationBiometrique}>
             <Ionicons name="finger-print-outline" size={30} color="#D4AF37" />
             <Text style={styles.bioText}>Touch / Face ID</Text>
           </TouchableOpacity>
@@ -111,7 +110,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 40,
     fontWeight: '900',
-    color: '#D4AF37', // Gold
+    color: '#D4AF37',
     letterSpacing: 3,
   },
   subtitle: {

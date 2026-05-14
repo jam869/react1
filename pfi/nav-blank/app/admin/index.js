@@ -6,84 +6,84 @@ import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 
-export default function AdminPage() {
-  const { user } = useAuth();
-  const [products, setProducts] = useState([]);
-  const [newNom, setNewNom] = useState('');
-  const [newPrix, setNewPrix] = useState('');
-  const [newDesc, setNewDesc] = useState('');
-  const [newImg, setNewImg] = useState('');
+export default function PageAdministration() {
+  const { user: utilisateur } = useAuth();
+  const [produits, setProduits] = useState([]);
+  const [nouveauNom, setNouveauNom] = useState('');
+  const [nouveauPrix, setNouveauPrix] = useState('');
+  const [nouvelleDescription, setNouvelleDescription] = useState('');
+  const [nouvelleImage, setNouvelleImage] = useState('');
   const { t } = useTranslation();
 
-  const loadProducts = async () => {
-    const db = await SQLite.openDatabaseAsync('pfi_auto.db');
-    const allRows = await db.getAllAsync('SELECT * FROM Produit');
-    setProducts(allRows);
+  const chargerProduits = async () => {
+    const bd = await SQLite.openDatabaseAsync('pfi_auto.db');
+    const toutesLesLignes = await bd.getAllAsync('SELECT * FROM Produit');
+    setProduits(toutesLesLignes);
   };
 
   useFocusEffect(
     useCallback(() => {
-      loadProducts();
+      chargerProduits();
     }, [])
   );
 
-  if (!user) return null;
+  if (!utilisateur) return null;
 
-  const handleAddProduct = async () => {
-    if (!newNom || !newPrix) {
+  const gererAjoutProduit = async () => {
+    if (!nouveauNom || !nouveauPrix) {
       Alert.alert('Error', 'Please enter name and price');
       return;
     }
-    const db = await SQLite.openDatabaseAsync('pfi_auto.db');
-    await db.runAsync('INSERT INTO Produit (nom, description, prix, image) VALUES (?, ?, ?, ?)', 
-      [newNom, newDesc, parseFloat(newPrix), newImg]);
-    setNewNom('');
-    setNewPrix('');
-    setNewDesc('');
-    setNewImg('');
-    loadProducts();
+    const bd = await SQLite.openDatabaseAsync('pfi_auto.db');
+    await bd.runAsync('INSERT INTO Produit (nom, description, prix, image) VALUES (?, ?, ?, ?)', 
+      [nouveauNom, nouvelleDescription, parseFloat(nouveauPrix), nouvelleImage]);
+    setNouveauNom('');
+    setNouveauPrix('');
+    setNouvelleDescription('');
+    setNouvelleImage('');
+    chargerProduits();
   };
 
-  const handleDeleteProduct = async (id) => {
-    const db = await SQLite.openDatabaseAsync('pfi_auto.db');
-    await db.runAsync('DELETE FROM Produit WHERE id = ?', [id]);
-    loadProducts();
+  const gererSuppressionProduit = async (id) => {
+    const bd = await SQLite.openDatabaseAsync('pfi_auto.db');
+    await bd.runAsync('DELETE FROM Produit WHERE id = ?', [id]);
+    chargerProduits();
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.item}>
-      <Image source={{ uri: item.image || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR38cpx6uXtYmLcjVefkuX-8F0xpeU_6o9Nw&s' }} style={styles.thumbnail} />
-      <View style={styles.itemInfo}>
-        <Text style={styles.itemName}>{item.nom}</Text>
-        <Text>{item.prix} $</Text>
+  const afficherElement = ({ item: element }) => (
+    <View style={styles.element}>
+      <Image source={{ uri: element.image || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR38cpx6uXtYmLcjVefkuX-8F0xpeU_6o9Nw&s' }} style={styles.miniature} />
+      <View style={styles.infoElement}>
+        <Text style={styles.nomElement}>{element.nom}</Text>
+        <Text>{element.prix} $</Text>
       </View>
-      <TouchableOpacity onPress={() => handleDeleteProduct(item.id)} style={styles.deleteButton}>
-        <Text style={styles.deleteText}>{t('delete')}</Text>
+      <TouchableOpacity onPress={() => gererSuppressionProduit(element.id)} style={styles.boutonSupprimer}>
+        <Text style={styles.texteSupprimer}>{t('delete')}</Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.conteneur}>
       <Header />
-      <View style={styles.content}>
-        <Text style={styles.title}>{t('admin')}</Text>
+      <View style={styles.contenu}>
+        <Text style={styles.titre}>{t('admin')}</Text>
         
-        <View style={styles.addForm}>
-          <TextInput style={styles.input} placeholder={t('products')} value={newNom} onChangeText={setNewNom} />
-          <TextInput style={styles.input} placeholder={t('price')} value={newPrix} onChangeText={setNewPrix} keyboardType="numeric" />
-          <TextInput style={styles.input} placeholder="Description" value={newDesc} onChangeText={setNewDesc} />
-          <TextInput style={styles.input} placeholder="Image URL" value={newImg} onChangeText={setNewImg} />
-          <TouchableOpacity style={styles.addButton} onPress={handleAddProduct}>
-            <Text style={styles.addText}>{t('add')}</Text>
+        <View style={styles.formulaireAjout}>
+          <TextInput style={styles.champSaisie} placeholder={t('products')} value={nouveauNom} onChangeText={setNouveauNom} />
+          <TextInput style={styles.champSaisie} placeholder={t('price')} value={nouveauPrix} onChangeText={setNouveauPrix} keyboardType="numeric" />
+          <TextInput style={styles.champSaisie} placeholder="Description" value={nouvelleDescription} onChangeText={setNouvelleDescription} />
+          <TextInput style={styles.champSaisie} placeholder="Image URL" value={nouvelleImage} onChangeText={setNouvelleImage} />
+          <TouchableOpacity style={styles.boutonAjouter} onPress={gererAjoutProduit}>
+            <Text style={styles.texteAjouter}>{t('add')}</Text>
           </TouchableOpacity>
         </View>
 
         <FlatList
-          data={products}
-          keyExtractor={item => item.id.toString()}
-          renderItem={renderItem}
-          style={styles.list}
+          data={produits}
+          keyExtractor={element => element.id.toString()}
+          renderItem={afficherElement}
+          style={styles.liste}
         />
       </View>
     </View>
@@ -91,26 +91,26 @@ export default function AdminPage() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  conteneur: {
     flex: 1,
     backgroundColor: '#fff',
   },
-  content: {
+  contenu: {
     flex: 1,
     padding: 15,
   },
-  title: {
+  titre: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  addForm: {
+  formulaireAjout: {
     marginBottom: 20,
     padding: 10,
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
   },
-  input: {
+  champSaisie: {
     backgroundColor: '#fff',
     padding: 10,
     borderRadius: 5,
@@ -118,44 +118,44 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eee',
   },
-  addButton: {
+  boutonAjouter: {
     backgroundColor: '#28a745',
     padding: 12,
     borderRadius: 5,
     alignItems: 'center',
   },
-  addText: {
+  texteAjouter: {
     color: '#fff',
     fontWeight: 'bold',
   },
-  list: {
+  liste: {
     flex: 1,
   },
-  item: {
+  element: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  thumbnail: {
+  miniature: {
     width: 50,
     height: 50,
     borderRadius: 5,
   },
-  itemInfo: {
+  infoElement: {
     flex: 1,
     marginLeft: 10,
   },
-  itemName: {
+  nomElement: {
     fontWeight: 'bold',
   },
-  deleteButton: {
+  boutonSupprimer: {
     padding: 8,
     backgroundColor: '#dc3545',
     borderRadius: 5,
   },
-  deleteText: {
+  texteSupprimer: {
     color: '#fff',
     fontSize: 12,
   },

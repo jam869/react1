@@ -5,46 +5,46 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 
-export default function PanierPage() {
-  const { cart, updateQuantity, removeFromCart, clearCart, getGrandTotal } = useCart();
+export default function PagePanier() {
+  const { cart: panier, updateQuantity: mettreAJourQuantite, removeFromCart: retirerDuPanier, clearCart: viderPanier, getGrandTotal: obtenirGrandTotal } = useCart();
   const { t, i18n } = useTranslation();
-  const [modalVisible, setModalVisible] = useState(false);
+  const [estVisible, setEstVisible] = useState(false);
 
-  const formatPrice = (price) => {
+  const formaterPrix = (prix) => {
     return new Intl.NumberFormat(i18n.language === 'fr' ? 'fr-CA' : 'en-CA', {
       style: 'currency',
       currency: 'CAD',
-    }).format(price);
+    }).format(prix);
   };
 
-  const handlePurchase = () => {
-    setModalVisible(true);
+  const gererAchat = () => {
+    setEstVisible(true);
   };
 
-  const confirmPurchase = () => {
-    clearCart();
-    setModalVisible(false);
+  const confirmerAchat = () => {
+    viderPanier();
+    setEstVisible(false);
   };
 
-  const renderItem = ({ item }) => (
+  const afficherElement = ({ item: element }) => (
     <View style={styles.item}>
-      <Image source={{ uri: item.image }} style={styles.thumbnail} />
+      <Image source={{ uri: element.image }} style={styles.thumbnail} />
       <View style={styles.details}>
-        <Text style={styles.itemName}>{item.nom}</Text>
-        <Text style={styles.priceText}>{t('price')}: {formatPrice(item.prix)}</Text>
-        <Text style={styles.totalText}>{t('total')}: {formatPrice(item.prix * item.quantity)}</Text>
+        <Text style={styles.itemName}>{element.nom}</Text>
+        <Text style={styles.priceText}>{t('price')}: {formaterPrix(element.prix)}</Text>
+        <Text style={styles.totalText}>{t('total')}: {formaterPrix(element.prix * element.quantity)}</Text>
         
         <View style={styles.quantityContainer}>
-          <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity - 1)}>
+          <TouchableOpacity onPress={() => mettreAJourQuantite(element.id, element.quantity - 1)}>
             <Ionicons name="remove-circle-outline" size={26} color="#D4AF37" />
           </TouchableOpacity>
-          <Text style={styles.quantityText}>{item.quantity}</Text>
-          <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity + 1)}>
+          <Text style={styles.quantityText}>{element.quantity}</Text>
+          <TouchableOpacity onPress={() => mettreAJourQuantite(element.id, element.quantity + 1)}>
             <Ionicons name="add-circle-outline" size={26} color="#D4AF37" />
           </TouchableOpacity>
         </View>
       </View>
-      <TouchableOpacity onPress={() => removeFromCart(item.id)} style={styles.removeButton}>
+      <TouchableOpacity onPress={() => retirerDuPanier(element.id)} style={styles.removeButton}>
         <Ionicons name="trash-outline" size={24} color="#ff4444" />
       </TouchableOpacity>
     </View>
@@ -54,7 +54,7 @@ export default function PanierPage() {
     <View style={styles.container}>
       <Text style={styles.title}>{t('cart')}</Text>
       
-      {cart.length === 0 ? (
+      {panier.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="cart-outline" size={80} color="#333" />
           <Text style={styles.emptyText}>{t('empty_cart')}</Text>
@@ -62,22 +62,22 @@ export default function PanierPage() {
       ) : (
         <>
           <FlatList
-            data={cart}
-            keyExtractor={item => item.id.toString()}
-            renderItem={renderItem}
+            data={panier}
+            keyExtractor={element => element.id.toString()}
+            renderItem={afficherElement}
             style={styles.list}
           />
           
           <View style={styles.footer}>
             <View style={styles.totalRow}>
               <Text style={styles.grandTotalLabel}>{t('grand_total')}</Text>
-              <Text style={styles.grandTotalValue}>{formatPrice(getGrandTotal())}</Text>
+              <Text style={styles.grandTotalValue}>{formaterPrix(obtenirGrandTotal())}</Text>
             </View>
             <View style={styles.actionButtons}>
-              <TouchableOpacity style={[styles.button, styles.clearButton]} onPress={clearCart}>
+              <TouchableOpacity style={[styles.button, styles.clearButton]} onPress={viderPanier}>
                 <Text style={styles.clearButtonText}>{t('empty_cart')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, styles.buyButton]} onPress={handlePurchase}>
+              <TouchableOpacity style={[styles.button, styles.buyButton]} onPress={gererAchat}>
                 <Text style={styles.buyButtonText}>{t('buy')}</Text>
               </TouchableOpacity>
             </View>
@@ -88,21 +88,20 @@ export default function PanierPage() {
       <Modal
         animationType="fade"
         transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        visible={estVisible}
+        onRequestClose={() => setEstVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            {/* Advanced Extra: Lottie Animation for success */}
             <LottieView
-              source={{ uri: 'https://assets10.lottiefiles.com/packages/lf20_lk80p9at.json' }} // Confetti checkmark
+              source={{ uri: 'https://assets10.lottiefiles.com/packages/lf20_lk80p9at.json' }}
               autoPlay
               loop={false}
               style={styles.lottie}
             />
             <Text style={styles.modalTitle}>{t('success_purchase')}</Text>
-            <Text style={styles.modalTotal}>{t('grand_total')}: {formatPrice(getGrandTotal())}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={confirmPurchase}>
+            <Text style={styles.modalTotal}>{t('grand_total')}: {formaterPrix(obtenirGrandTotal())}</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={confirmerAchat}>
               <Text style={styles.closeButtonText}>{t('close')}</Text>
             </TouchableOpacity>
           </View>

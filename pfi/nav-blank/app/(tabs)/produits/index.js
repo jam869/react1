@@ -5,47 +5,46 @@ import { Link, useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Accelerometer } from 'expo-sensors';
 
-export default function ProduitsPage() {
-  const [products, setProducts] = useState([]);
+export default function PageProduits() {
+  const [produits, setProduits] = useState([]);
   const { t } = useTranslation();
   const router = useRouter();
 
-  const loadProducts = async () => {
-    const db = await SQLite.openDatabaseAsync('pfi_auto.db');
-    const allRows = await db.getAllAsync('SELECT * FROM Produit');
-    setProducts(allRows);
+  const chargerProduits = async () => {
+    const bdd = await SQLite.openDatabaseAsync('pfi_auto.db');
+    const toutesLesLignes = await bdd.getAllAsync('SELECT * FROM Produit');
+    setProduits(toutesLesLignes);
   };
 
   useFocusEffect(
     useCallback(() => {
-      loadProducts();
+      chargerProduits();
       
-      // Accelerometer logic
-      const subscription = Accelerometer.addListener(accelerometerData => {
-        const { x, y, z } = accelerometerData;
-        const totalForce = Math.abs(x) + Math.abs(y) + Math.abs(z);
+      const abonnement = Accelerometer.addListener(donneesAccelerometre => {
+        const { x, y, z } = donneesAccelerometre;
+        const forceTotale = Math.abs(x) + Math.abs(y) + Math.abs(z);
         
-        if (totalForce > 3.0) { // Shake detected
-          if (products.length > 0) {
-            const randomProduct = products[Math.floor(Math.random() * products.length)];
-            router.push({ pathname: '/(tabs)/produits/[id]', params: { id: randomProduct.id } });
+        if (forceTotale > 3.0) {
+          if (produits.length > 0) {
+            const produitAleatoire = produits[Math.floor(Math.random() * produits.length)];
+            router.push({ pathname: '/(tabs)/produits/[id]', params: { id: produitAleatoire.id } });
           }
         }
       });
       
       Accelerometer.setUpdateInterval(500);
 
-      return () => subscription && subscription.remove();
-    }, [products])
+      return () => abonnement && abonnement.remove();
+    }, [produits])
   );
 
-  const renderItem = ({ item }) => (
-    <Link href={{ pathname: '/(tabs)/produits/[id]', params: { id: item.id } }} asChild>
+  const afficherElement = ({ item: element }) => (
+    <Link href={{ pathname: '/(tabs)/produits/[id]', params: { id: element.id } }} asChild>
       <Pressable style={styles.item}>
-        <Image source={{ uri: item.image }} style={styles.thumbnail} />
+        <Image source={{ uri: element.image }} style={styles.thumbnail} />
         <View style={styles.itemInfo}>
-          <Text style={styles.name}>{item.nom}</Text>
-          <Text style={styles.priceTag}>{item.prix.toLocaleString()} $</Text>
+          <Text style={styles.name}>{element.nom}</Text>
+          <Text style={styles.priceTag}>{element.prix.toLocaleString()} $</Text>
         </View>
       </Pressable>
     </Link>
@@ -56,9 +55,9 @@ export default function ProduitsPage() {
       <Text style={styles.title}>{t('products')}</Text>
       <Text style={styles.hint}>Secouez pour un coup de cœur !</Text>
       <FlatList
-        data={products}
-        keyExtractor={item => item.id.toString()}
-        renderItem={renderItem}
+        data={produits}
+        keyExtractor={element => element.id.toString()}
+        renderItem={afficherElement}
         contentContainerStyle={styles.list}
       />
     </View>
